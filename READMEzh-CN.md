@@ -1,50 +1,58 @@
 
-FinalTECH-乱序技艺
-=
+# FinalTECH-乱序技艺
 
-关于
--
 
-一个让世界变得更加美好的Slimefun。
+## About
 
-它包括新的电力系统、新的货运系统以及目前的一些特殊机器和物品。
 
-权限
--
+A Slimefun addon about making the world a little better.
 
-| 权限                          | 命令                      | 默认   | 描述                 |
-| --------------------------- | ----------------------- | ---- | ------------------ |
-| finaltech.item.copy-card    | /finaltech-copy-card    | op   | 将物品传送到手头的复制卡       |
-| finaltech.item.storage-card | /finaltech-storage-card | op   | 将一个有效的项目转到给定金额的存储卡 |
-| finaltech.item.info         | /finaltech-info         | true | 手中显示 Slimefun 项目信息 |
+It includes new electric system, new cargo system, and some special machines and items now.
 
-注意
--
+## Permission
+
+| 权限                          | 命令                      | 默认   | 描述                                                         |
+| --------------------------- | ----------------------- | ---- | ---------------------------------------------------------- |
+| finaltech.item.copy-card    | /finaltech-copy-card    | op   | transform item to a copy card in hand                      |
+| finaltech.item.storage-card | /finaltech-storage-card | op   | transform a valid item to a storage card with given amount |
+| finaltech.item.info         | /finaltech-info         | true | 手中显示 Slimefun 项目信息                                         |
+| finaltech.valid.item        | /finaltech-valid-item   | op   | transform specific item to be valid                        |
+
+## 注意
 
 该项目仍在进行中，尚未完成。 今后将增加更多细节。
 
 欢迎在这里报告错误 <https://github.com/ecro-fun/FinalTECH/issues>
 
-维基
--
+## 维基
 
 几乎所有项目都在Slimefun指南中有内置描述。
 
 您可以在这里找到一些信息 <https://github.com/ecro-fun/FinalTECH/wiki>
 
-多语种支持
--
+## 多语种支持
 
 英语是默认的，并将随着时间的推移而保持。
 
 其他人可以在这里找到 <https://github.com/ecro-fun/FinalTECH/tree/master/language>
 
-版本历史
--
+## 版本历史
 
-20230109
-> 某些项目的余额调整
+### 20230109
 
-> 更多支持配置
++ balance tweak for some items
++ 更多支持配置
++ 某些项目的小优化
 
-> 某些项目的小优化
+### 20230326
+
++ balance tweak for some items
++ small optimization for som items
++ optional patch for energy regulator (default enabled)
++ optional patch for data loss bug (default disabled)
++ some items are protected now, for log service in the future
+
+## TODO
+
++ log service, for protecting server from item duplication bug
++ some optimization for some items
