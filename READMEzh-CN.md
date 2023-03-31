@@ -2,23 +2,23 @@
 # FinalTECH-乱序技艺
 
 
-## About
+## 关于
 
 
-A Slimefun addon about making the world a little better.
+一个让世界变得更加美好的Slimefun。
 
-It includes new electric system, new cargo system, and some special machines and items now.
+它包括新的电力系统、新的货运系统以及目前的一些特殊机器和物品。
 
-## Permission
+## 权限
 
-| 权限                          | 命令                      | 默认   | 描述                                                         |
-| --------------------------- | ----------------------- | ---- | ---------------------------------------------------------- |
-| finaltech.item.copy-card    | /finaltech-copy-card    | op   | transform item to a copy card in hand                      |
-| finaltech.item.storage-card | /finaltech-storage-card | op   | transform a valid item to a storage card with given amount |
-| finaltech.item.info         | /finaltech-info         | true | 手中显示 Slimefun 项目信息                                         |
-| finaltech.valid.item        | /finaltech-valid-item   | op   | transform specific item to be valid                        |
+| 权限                          | 命令                      | 默认   | 描述                   |
+| --------------------------- | ----------------------- | ---- | -------------------- |
+| finaltech.item.copy-card    | /finaltech-copy-card    | op   | 将物品转换为手中的复制卡         |
+| finaltech.item.storage-card | /finaltech-storage-card | op   | 将一个有效的项目转换为带给定金额的存储卡 |
+| finaltech.item.info         | /finaltech-info         | true | 手中显示 Slimefun 项目信息   |
+| finaltech.valid.item        | /finaltech-valid-item   | op   | 将特定项目转换为有效           |
 
-## 注意
+## 通知
 
 该项目仍在进行中，尚未完成。 今后将增加更多细节。
 
@@ -40,19 +40,19 @@ It includes new electric system, new cargo system, and some special machines and
 
 ### 20230109
 
-+ balance tweak for some items
++ 某些项目的平衡调低
 + 更多支持配置
 + 某些项目的小优化
 
 ### 20230326
 
-+ balance tweak for some items
-+ small optimization for som items
-+ optional patch for energy regulator (default enabled)
-+ optional patch for data loss bug (default disabled)
-+ some items are protected now, for log service in the future
++ 某些项目的平衡调低
++ som项目的小优化
++ 能量调节器的可选补丁 (默认启用)
++ 数据丢失错误的可选补丁 (默认禁用)
++ 一些项目现在受到保护，将来将来的日志服务
 
-## TODO
+## 待定
 
-+ log service, for protecting server from item duplication bug
-+ some optimization for some items
++ 日志服务，以保护服务器免于项目重复
++ 某些项目的一些优化
