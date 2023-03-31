@@ -1,11 +1,9 @@
 package io.taraxacum.finaltech.core.operation;
 
 import io.github.thebusybiscuit.slimefun4.core.machines.MachineOperation;
-import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.libs.plugin.dto.ItemWrapper;
 import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.libs.plugin.dto.ItemWrapper;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.finaltech.util.ConfigUtil;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nullable;
@@ -17,8 +15,8 @@ import javax.annotation.Nullable;
 public class DustFactoryOperation implements MachineOperation {
     private int amountCount = 0;
     private int typeCount = 0;
-    private int amountDifficulty;
-    private int typeDifficulty;
+    private final int amountDifficulty;
+    private final int typeDifficulty;
     private final ItemWrapper[] matchItemList;
 
     public DustFactoryOperation(int amountDifficulty, int typeDifficulty) {
@@ -76,9 +74,9 @@ public class DustFactoryOperation implements MachineOperation {
     @Nullable
     public ItemStack getResult() {
         if (this.amountCount == this.amountDifficulty && this.typeCount == this.typeDifficulty) {
-            return ItemStackUtil.cloneItem(FinalTechItems.ORDERED_DUST);
+            return FinalTechItems.ORDERED_DUST.getValidItem();
         } else if (this.isFinished()) {
-            return ItemStackUtil.cloneItem(FinalTechItems.UNORDERED_DUST);
+            return FinalTechItems.UNORDERED_DUST.getValidItem();
         } else {
             return null;
         }

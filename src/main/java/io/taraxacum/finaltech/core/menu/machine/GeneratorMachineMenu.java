@@ -59,7 +59,6 @@ public class GeneratorMachineMenu extends AbstractMachineMenu {
     @Override
     public void init() {
         super.init();
-        this.setSize(54);
         this.addItem(STATUS_SLOT, Icon.QUANTITY_MODULE_ICON);
         this.addMenuClickHandler(STATUS_SLOT, ChestMenuUtils.getEmptyClickHandler());
     }

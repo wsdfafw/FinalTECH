@@ -24,7 +24,7 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  * @since 2.0
  */
-public class StackStorageUnit extends AbstractCargo implements RecipeItem {
+public class StackStorageUnit extends AbstractStorageUnit implements RecipeItem {
     public StackStorageUnit(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
     }

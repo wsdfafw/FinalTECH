@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Supplier;
 
 /**
  * @author Final_ROOT
@@ -38,25 +39,27 @@ public class BlockTickerUtil {
         }
     }
 
-    public static void setSleep(@Nonnull Config config, @Nullable String sleep) {
-        config.setValue(ConstantTableUtil.CONFIG_SLEEP, sleep);
+
+    public static <T> void runTask(@Nonnull ServerRunnableLockFactory<T> serverRunnableLockFactory, boolean async, @Nonnull Runnable runnable, Supplier<T[]> supplier) {
+        if (async) {
+            serverRunnableLockFactory.waitThenRun(runnable, supplier.get());
+        } else {
+            runnable.run();
+        }
     }
 
-    public static void setSleep(@Nonnull Location location, @Nullable String sleep) {
-        BlockStorage.addBlockInfo(location, ConstantTableUtil.CONFIG_SLEEP, sleep);
+    public static void setSleep(@Nonnull Config config, @Nullable String sleep) {
+        config.setValue(ConstantTableUtil.CONFIG_SLEEP, sleep);
     }
 
     public static boolean hasSleep(@Nonnull Config config) {
         return config.contains(ConstantTableUtil.CONFIG_SLEEP);
     }
 
-    public static double getSleep(@Nonnull Config config) {
-        return Double.parseDouble(config.getString(ConstantTableUtil.CONFIG_SLEEP));
-    }
-
     public static void subSleep(@Nonnull Config config) {
-        if (config.contains(ConstantTableUtil.CONFIG_SLEEP)) {
-            double sleep = BlockTickerUtil.getSleep(config) - 1;
+        String sleepStr = config.getString(ConstantTableUtil.CONFIG_SLEEP);
+        if (sleepStr != null) {
+            double sleep = Double.parseDouble(sleepStr) - 1;
             if (sleep > 0) {
                 config.setValue(ConstantTableUtil.CONFIG_SLEEP, String.valueOf(sleep));
             } else {
@@ -75,7 +78,7 @@ public class BlockTickerUtil {
 
             @Override
             public void tick(Block b, SlimefunItem item, Config data) {
-                System.out.println("DEBUG MODE: " + slimefunItem.getId() + " | Location: " + b.getLocation());
+                FinalTech.logger().info("DEBUG MODE: " + slimefunItem.getId() + " | Location: " + b.getLocation());
                 blockTicker.tick(b, item, data);
             }
 
@@ -144,11 +147,11 @@ public class BlockTickerUtil {
 
             @Override
             public void tick(Block block, SlimefunItem item, Config data) {
-                if(lastLocationList.size() > 1) {
-                    Location randomLocation = lastLocationList.get(random.nextInt(lastLocationList.size()));
+                if(this.lastLocationList.size() > 1) {
+                    Location randomLocation = this.lastLocationList.get(this.random.nextInt(this.lastLocationList.size()));
                     Location location = block.getLocation();
                     double manhattanDistance = LocationUtil.getManhattanDistance(randomLocation, location);
-                    if(manhattanDistance < range + mulRange * lastLocationList.size() && manhattanDistance > 0) {
+                    if(manhattanDistance < range + mulRange * this.lastLocationList.size() && manhattanDistance > 0) {
                         JavaPlugin javaPlugin = item.getAddon().getJavaPlugin();
                         World world = block.getLocation().getWorld();
                         javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
@@ -182,16 +185,16 @@ public class BlockTickerUtil {
                     }
                 }
                 blockTicker.tick(block, item, data);
-                locationList.add(block.getLocation());
+                this.locationList.add(block.getLocation());
             }
 
             @Override
             public void uniqueTick() {
                 blockTicker.uniqueTick();
-                List<Location> tempLocationList = lastLocationList;
-                lastLocationList = locationList;
-                locationList = tempLocationList;
-                locationList.clear();
+                List<Location> tempLocationList = this.lastLocationList;
+                this.lastLocationList = this.locationList;
+                this.locationList = tempLocationList;
+                this.locationList.clear();
             }
         };
     }

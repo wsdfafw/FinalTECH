@@ -44,13 +44,13 @@ public class ConfigFileManager {
         this.file = new File("plugins/" + plugin.getName().replace(" ", "_") + "/" + path, configFileName + ".yml");
         if (!file.exists()) {
             try {
-                boolean mkdirs = file.getParentFile().mkdirs();
-                if (mkdirs) {
-                    Files.copy(Objects.requireNonNull(this.getClass().getResourceAsStream("/" + path + "/" + configFileName + ".yml")), this.file.toPath());
-                }
+                file.getParentFile().mkdirs();
+                Files.copy(Objects.requireNonNull(this.getClass().getResourceAsStream("/" + path + "/" + configFileName + ".yml")), this.file.toPath());
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        } else {
+
         }
         this.configFile = YamlConfiguration.loadConfiguration(this.file);
     }

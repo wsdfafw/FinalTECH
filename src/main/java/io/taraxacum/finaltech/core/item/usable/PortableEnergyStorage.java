@@ -2,21 +2,21 @@ package io.taraxacum.finaltech.core.item.usable;
 
 import io.github.thebusybiscuit.slimefun4.api.events.PlayerRightClickEvent;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
-import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.attributes.EnergyNetComponent;
-import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponentType;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
+import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.event.EnergyDepositEvent;
+import io.taraxacum.finaltech.core.event.EnergyWithdrawEvent;
 import io.taraxacum.finaltech.util.*;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
+import io.taraxacum.libs.slimefun.dto.LocationInfo;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
@@ -28,14 +28,17 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Final_ROOT
  * @since 2.0
  */
 public class PortableEnergyStorage extends UsableSlimefunItem implements RecipeItem {
-    private final NamespacedKey KEY = new NamespacedKey(FinalTech.getInstance(), this.getId());
+    private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
+    private final NamespacedKey key = new NamespacedKey(FinalTech.getInstance(), this.getId());
 
     public PortableEnergyStorage(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -50,47 +53,51 @@ public class PortableEnergyStorage extends UsableSlimefunItem implements RecipeI
     @Override
     protected void function(@Nonnull PlayerRightClickEvent playerRightClickEvent) {
         playerRightClickEvent.cancel();
+        ItemStack item = playerRightClickEvent.getItem();
+        if(item.getAmount() > 1) {
+            return;
+        }
+
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
 
         Optional<Block> clickedBlock = playerRightClickEvent.getClickedBlock();
         if (clickedBlock.isPresent()) {
             Block block = clickedBlock.get();
             Location location = block.getLocation();
-            if (PermissionUtil.checkPermission(playerRightClickEvent.getPlayer(), location, Interaction.INTERACT_BLOCK, Interaction.PLACE_BLOCK, Interaction.BREAK_BLOCK) && BlockStorage.hasBlockInfo(location)) {
-                Config config = BlockStorage.getLocationInfo(location);
-                if (config.contains(ConstantTableUtil.CONFIG_ID)) {
-                    String itemId = config.getString(ConstantTableUtil.CONFIG_ID);
-                    SlimefunItem slimefunItem = SlimefunItem.getById(itemId);
-                    if (slimefunItem instanceof EnergyNetComponent energyNetComponent && energyNetComponent.getCapacity() > 0) {
-                        ItemStack item = playerRightClickEvent.getItem();
+            LocationInfo locationInfo = LocationInfo.get(location);
+            if (locationInfo != null && !this.notAllowedId.contains(locationInfo.getId()) && locationInfo.getSlimefunItem() instanceof EnergyNetComponent energyNetComponent && energyNetComponent.isChargeable() && PermissionUtil.checkPermission(playerRightClickEvent.getPlayer(), location, Interaction.INTERACT_BLOCK, Interaction.PLACE_BLOCK, Interaction.BREAK_BLOCK)) {
 
-                        if (!playerRightClickEvent.getPlayer().isSneaking()) {
-                            // charge machine
+                if (!playerRightClickEvent.getPlayer().isSneaking()) {
+                    // charge machine
 
-                            int capacity = energyNetComponent.getCapacity();
-                            String energyInMachine = EnergyUtil.getCharge(config);
-                            String energyInItem = this.getEnergy(item);
-                            String charge = StringNumberUtil.min(StringNumberUtil.sub(String.valueOf(capacity), energyInMachine), energyInItem);
+                    String energyInItem = this.getEnergy(item);
+                    EnergyDepositEvent energyDepositEvent = new EnergyDepositEvent(location, energyInItem);
+                    this.getAddon().getJavaPlugin().getServer().getPluginManager().callEvent(energyDepositEvent);
+                    energyInItem = energyDepositEvent.getEnergy();
 
-                            EnergyUtil.setCharge(config, StringNumberUtil.add(energyInMachine, charge));
-                            this.subEnergy(item, charge);
+                    int capacity = energyNetComponent.getCapacity();
+                    String energyInMachine = EnergyUtil.getCharge(locationInfo.getConfig());
+                    String charge = StringNumberUtil.min(StringNumberUtil.sub(String.valueOf(capacity), energyInMachine), energyInItem);
 
-                            this.updateLore(item);
+                    EnergyUtil.setCharge(locationInfo.getConfig(), StringNumberUtil.add(energyInMachine, charge));
+                    this.setEnergy(item, StringNumberUtil.sub(energyInItem, charge));
 
-                            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.GLOW, 0, block));
-                        } else if (playerRightClickEvent.getPlayer().isSneaking()) {
-                            // consume energy in machine, charge item
+                    this.updateLore(item);
 
-                            String energyInMachine = EnergyUtil.getCharge(config);
+                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
+                } else if (playerRightClickEvent.getPlayer().isSneaking()) {
+                    // consume energy in machine, charge item
 
-                            this.addEnergy(item, energyInMachine);
-                            EnergyUtil.setCharge(config, StringNumberUtil.ZERO);
+                    EnergyWithdrawEvent energyWithdrawEvent = new EnergyWithdrawEvent(location);
+                    this.getAddon().getJavaPlugin().getServer().getPluginManager().callEvent(energyWithdrawEvent);
+                    String energyInMachine = StringNumberUtil.add(EnergyUtil.getCharge(locationInfo.getConfig()), energyWithdrawEvent.getEnergy());
 
-                            this.updateLore(item);
+                    this.addEnergy(item, energyInMachine);
+                    EnergyUtil.setCharge(locationInfo.getConfig(), StringNumberUtil.ZERO);
 
-                            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.GLOW, 0, block));
-                        }
-                    }
+                    this.updateLore(item);
+
+                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
                 }
             }
         }
@@ -98,40 +105,41 @@ public class PortableEnergyStorage extends UsableSlimefunItem implements RecipeI
 
     @Nonnull
     public String getEnergy(@Nonnull ItemStack itemStack) {
-        if (itemStack.hasItemMeta()) {
-            ItemMeta itemMeta = itemStack.getItemMeta();
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta != null) {
             PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
-            if (persistentDataContainer.has(KEY, PersistentDataType.STRING)) {
-                return persistentDataContainer.get(KEY, PersistentDataType.STRING);
-            }
+            return JavaUtil.getFirstNotNull(persistentDataContainer.get(this.key, PersistentDataType.STRING), StringNumberUtil.ZERO);
         }
         return StringNumberUtil.ZERO;
     }
 
     public void addEnergy(@Nonnull ItemStack itemStack, @Nonnull String energy) {
-        if (itemStack.hasItemMeta()) {
-            ItemMeta itemMeta = itemStack.getItemMeta();
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta != null) {
             PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
-            String number = StringNumberUtil.ZERO;
-            if (persistentDataContainer.has(KEY, PersistentDataType.STRING)) {
-                number = persistentDataContainer.get(KEY, PersistentDataType.STRING);
-            }
+            String number = JavaUtil.getFirstNotNull(persistentDataContainer.get(this.key, PersistentDataType.STRING), StringNumberUtil.ZERO);
             number = StringNumberUtil.add(number, energy);
-            persistentDataContainer.set(KEY, PersistentDataType.STRING, number);
+            persistentDataContainer.set(this.key, PersistentDataType.STRING, number);
             itemStack.setItemMeta(itemMeta);
         }
     }
 
     public void subEnergy(@Nonnull ItemStack itemStack, @Nonnull String energy) {
-        if (itemStack.hasItemMeta()) {
-            ItemMeta itemMeta = itemStack.getItemMeta();
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta != null) {
             PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
-            String number = StringNumberUtil.ZERO;
-            if (persistentDataContainer.has(KEY, PersistentDataType.STRING)) {
-                number = persistentDataContainer.get(KEY, PersistentDataType.STRING);
-            }
+            String number = JavaUtil.getFirstNotNull(persistentDataContainer.get(this.key, PersistentDataType.STRING), StringNumberUtil.ZERO);
             number = StringNumberUtil.sub(number, energy);
-            persistentDataContainer.set(KEY, PersistentDataType.STRING, number);
+            persistentDataContainer.set(this.key, PersistentDataType.STRING, number);
+            itemStack.setItemMeta(itemMeta);
+        }
+    }
+
+    public void setEnergy(@Nonnull ItemStack itemStack, @Nonnull String energy) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if(itemMeta != null) {
+            PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
+            persistentDataContainer.set(this.key, PersistentDataType.STRING, energy);
             itemStack.setItemMeta(itemMeta);
         }
     }

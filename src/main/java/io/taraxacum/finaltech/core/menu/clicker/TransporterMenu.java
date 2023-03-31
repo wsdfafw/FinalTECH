@@ -1,7 +1,6 @@
 package io.taraxacum.finaltech.core.menu.clicker;
 
-import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
-import io.taraxacum.finaltech.core.item.machine.clicker.Transporter;
+import io.taraxacum.finaltech.core.item.machine.clicker.AbstractClickerMachine;
 import io.taraxacum.finaltech.util.LocationUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
@@ -23,15 +22,18 @@ import java.util.List;
  * @author Final_ROOT
  * @since 2.2
  */
-public class TransporterMenu extends AbstractAccessorMenu {
+public class TransporterMenu extends AbstractClickerMenu {
     private static final int[] BORDER = new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8};
     private static final int[] INPUT_BORDER = new int[0];
     private static final int[] OUTPUT_BORDER = new int[0];
     private static final int[] INPUT_SLOT = new int[0];
     private static final int[] OUTPUT_SLOT = new int[0];
 
-    public TransporterMenu(@Nonnull AbstractMachine machine) {
-        super(machine);
+    private final int range;
+
+    public TransporterMenu(@Nonnull AbstractClickerMachine slimefunItem, int range) {
+        super(slimefunItem);
+        this.range = range;
     }
 
     @Override
@@ -72,12 +74,12 @@ public class TransporterMenu extends AbstractAccessorMenu {
             BlockFace blockFace = ((Directional) blockData).getFacing();
             Block targetBlock = block;
 
-            for (int i = 0; i < Transporter.RANGE; i++) {
+            for (int i = 0; i < this.range; i++) {
                 targetBlock = targetBlock.getRelative(blockFace);
                 blockList.add(targetBlock);
                 if(targetBlock.getType().isAir()) {
                     JavaPlugin javaPlugin = this.getSlimefunItem().getAddon().getJavaPlugin();
-                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.COMPOSTER, 0, blockList));
+                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, blockList));
 
                     Location sourceLocation = player.getLocation().clone();
                     Location targetLocation = LocationUtil.getCenterLocation(targetBlock);

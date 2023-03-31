@@ -22,4 +22,6 @@ public class ConstantTableUtil {
     public static final int ITEM_SPIROCHETE_AMOUNT = ConfigUtil.getOrDefaultItemSetting(64, "SPIROCHETE", "amount") + (int) (Math.pow(Slimefun.getRegistry().getAllSlimefunItems().size(), 0.5) * 4);
 
     public static final int ITEM_MAX_STACK = 64;
+
+    public static final double WARNING_TPS = 19.5;
 }

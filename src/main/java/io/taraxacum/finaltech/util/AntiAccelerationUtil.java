@@ -5,6 +5,10 @@ import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 
 import javax.annotation.Nonnull;
 
+/**
+ * @author Final_ROOT
+ * @since 2.0
+ */
 public class AntiAccelerationUtil {
     public static String KEY = "anti-acceleration";
 
@@ -14,7 +18,8 @@ public class AntiAccelerationUtil {
      * @return whether a machine can work
      */
     public static boolean isAccelerated(@Nonnull Config config) {
-        if (config.contains(KEY) && Integer.parseInt(config.getValue(KEY).toString()) == FinalTech.getSlimefunTickCount()) {
+        String s = config.getString(KEY);
+        if (s != null && Integer.parseInt(s) == FinalTech.getSlimefunTickCount()) {
             return true;
         }
         config.setValue(KEY, String.valueOf(FinalTech.getSlimefunTickCount()));

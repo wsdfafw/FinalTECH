@@ -11,6 +11,10 @@ import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 
+/**
+ * @author Final_ROOT
+ * @since 2.0
+ */
 public abstract class AbstractFaceMachine extends AbstractPointMachine {
     public AbstractFaceMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -18,7 +22,7 @@ public abstract class AbstractFaceMachine extends AbstractPointMachine {
 
     @Nonnull
     @Override
-    protected final Location getTargetLocation(@Nonnull Location location, int range) {
+    public final Location getTargetLocation(@Nonnull Location location, int range) {
         Block block = location.getBlock();
         return block.getRelative(this.getBlockFace()).getLocation();
     }

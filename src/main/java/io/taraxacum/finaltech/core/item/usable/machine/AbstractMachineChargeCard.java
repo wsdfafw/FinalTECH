@@ -80,7 +80,7 @@ public abstract class AbstractMachineChargeCard extends UsableSlimefunItem {
             }
 
             JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(this.getAddon().getJavaPlugin(), Particle.GLOW, 0, block));
+            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(this.getAddon().getJavaPlugin(), Particle.WAX_OFF, 0, block));
 
             int capacity = energyNetComponent.getCapacity();
             int chargeEnergy = (int) this.energy();

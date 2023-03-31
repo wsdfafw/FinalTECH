@@ -106,7 +106,7 @@ public abstract class AbstractMachineActivateCard extends UsableSlimefunItem {
                 time = this.times() * playerRightClickEvent.getItem().getAmount();
             }
 
-            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.GLOW, 0, block));
+            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
 
             Runnable runnable = () -> {
                 int capacity = energyNetComponent.getCapacity();
@@ -139,7 +139,7 @@ public abstract class AbstractMachineActivateCard extends UsableSlimefunItem {
                 time = this.times() * playerRightClickEvent.getItem().getAmount();
             }
 
-            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.GLOW, 0, block));
+            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
 
             Runnable runnable = () -> {
                 for (int i = 0; i < time; i++) {
@@ -158,7 +158,7 @@ public abstract class AbstractMachineActivateCard extends UsableSlimefunItem {
                 return;
             }
 
-            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(this.getAddon().getJavaPlugin(), Particle.GLOW, 0, block));
+            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(this.getAddon().getJavaPlugin(), Particle.WAX_OFF, 0, block));
 
             int capacity = energyNetComponent.getCapacity();
             int chargeEnergy = (int) AbstractMachineActivateCard.this.energy();

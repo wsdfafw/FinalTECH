@@ -1,16 +1,15 @@
 package io.taraxacum.finaltech.core.menu.clicker;
 
-import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.helper.Icon;
-import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
+import io.taraxacum.finaltech.core.item.machine.clicker.AbstractClickerMachine;
 import io.taraxacum.finaltech.core.item.machine.clicker.AreaAccessor;
+import io.taraxacum.finaltech.util.LocationUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
+import io.taraxacum.libs.slimefun.dto.LocationInfo;
 import io.taraxacum.libs.slimefun.util.SfItemUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.CSCoreLibPlugin.general.Inventory.ChestMenu;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
@@ -33,7 +32,7 @@ import java.util.Map;
  * @author Final_ROOT
  * @since 2.0
  */
-public class AreaAccessorMenu extends AbstractAccessorMenu {
+public class AreaAccessorMenu extends AbstractClickerMenu {
     private static final int[] BORDER = new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53};
     private static final int[] INPUT_BORDER = new int[0];
     private static final int[] OUTPUT_BORDER = new int[0];
@@ -45,8 +44,11 @@ public class AreaAccessorMenu extends AbstractAccessorMenu {
     private static final int[] TEMP_PREVIOUS_PAGE = new int[] {8, 17, 26};
     private static final int[] TEMP_NEXT_PAGE = new int[] {35, 44, 53};
 
-    public AreaAccessorMenu(@Nonnull AbstractMachine machine) {
-        super(machine);
+    private final int range;
+
+    public AreaAccessorMenu(@Nonnull AbstractClickerMachine slimefunItem, int range) {
+        super(slimefunItem);
+        this.range = range;
     }
 
     @Override
@@ -57,7 +59,7 @@ public class AreaAccessorMenu extends AbstractAccessorMenu {
 
     @Override
     protected void doFunction(@Nonnull BlockMenu blockMenu, @Nonnull Block block, @Nonnull Player player) {
-        this.generateMenu(player, block.getLocation(), AreaAccessor.RANGE, 0);
+        this.generateMenu(player, block.getLocation(), this.range, 0);
     }
 
     @Override
@@ -143,32 +145,32 @@ public class AreaAccessorMenu extends AbstractAccessorMenu {
                 continue;
             }
             Location l = locationList.get((i + page * TEMP_CONTENT.length) % locationList.size());
-            if (BlockStorage.hasBlockInfo(l)) {
-                Config config = BlockStorage.getLocationInfo(l);
-                if (config.contains(ConstantTableUtil.CONFIG_ID)) {
-                    SlimefunItem slimefunItem = SlimefunItem.getById(config.getString(ConstantTableUtil.CONFIG_ID));
-                    if (slimefunItem != null) {
-                        BlockMenu blockMenu = BlockStorage.getInventory(l);
-                        if (blockMenu != null) {
-                            ItemStack icon = new CustomItemStack(slimefunItem.getItem(), slimefunItem.getItemName(), FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("items", SfItemUtil.getIdFormatName(AreaAccessor.class), "temp-icon", "lore"),
-                                    String.valueOf(l.getBlockX() - location.getBlockX()),
-                                    String.valueOf(l.getBlockY() - location.getBlockY()),
-                                    String.valueOf(l.getBlockZ() - location.getBlockZ())));
-                            chestMenu.addItem(TEMP_CONTENT[i], icon);
-                            chestMenu.addMenuClickHandler(TEMP_CONTENT[i], (p, slot, item, action) -> {
-                                // BlockMenu may be updated after the menu generated.
-                                if (BlockStorage.hasBlockInfo(l) && BlockStorage.hasInventory(l.getBlock()) && blockMenu.canOpen(l.getBlock(), player)) {
-                                    JavaPlugin javaPlugin = AreaAccessorMenu.this.getMachine().getAddon().getJavaPlugin();
-                                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.GLOW, 0, blockMenu.getBlock()));
-                                    blockMenu.open(player);
-                                } else {
-                                    player.sendMessage(FinalTech.getLanguageString("items", SfItemUtil.getIdFormatName(AreaAccessor.class), "message", "no-permission", "location"));
-                                }
-                                return false;
-                            });
-                            continue;
+            LocationInfo locationInfo = LocationInfo.get(l);
+            if(locationInfo != null) {
+                BlockMenu blockMenu = BlockStorage.getInventory(l);
+                if (blockMenu != null) {
+                    ItemStack icon = new CustomItemStack(locationInfo.getSlimefunItem().getItem(), locationInfo.getSlimefunItem().getItemName(), FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("items", SfItemUtil.getIdFormatName(AreaAccessor.class), "temp-icon", "lore"),
+                            String.valueOf(l.getBlockX() - location.getBlockX()),
+                            String.valueOf(l.getBlockY() - location.getBlockY()),
+                            String.valueOf(l.getBlockZ() - location.getBlockZ())));
+                    chestMenu.addItem(TEMP_CONTENT[i], icon);
+                    chestMenu.addMenuClickHandler(TEMP_CONTENT[i], (p, slot, item, action) -> {
+                        // BlockMenu may be updated after the menu generated.
+                        if (BlockStorage.hasBlockInfo(l) && BlockStorage.hasInventory(l.getBlock()) && blockMenu.canOpen(l.getBlock(), player)) {
+                            JavaPlugin javaPlugin = AreaAccessorMenu.this.getSlimefunItem().getAddon().getJavaPlugin();
+                            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, blockMenu.getBlock()));
+                            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(javaPlugin, Particle.WAX_OFF, 0, 0.25, LocationUtil.getCenterLocation(location.getBlock()), LocationUtil.getCenterLocation(blockMenu.getBlock())));
+                            if(action.isRightClicked()) {
+                                player.closeInventory();
+                            } else {
+                                blockMenu.open(player);
+                            }
+                        } else {
+                            player.sendMessage(FinalTech.getLanguageString("items", SfItemUtil.getIdFormatName(AreaAccessor.class), "message", "no-permission", "location"));
                         }
-                    }
+                        return false;
+                    });
+                    continue;
                 }
             }
             chestMenu.addItem(TEMP_CONTENT[i], Icon.ERROR_ICON);

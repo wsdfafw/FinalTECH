@@ -1,12 +1,11 @@
 package io.taraxacum.libs.slimefun.interfaces;
 
-import java.util.List;
-
 /**
+ * @see io.taraxacum.finaltech.core.group.RecipeItemGroup
  * @author Final_ROOT
  */
 public interface ShowInfoItem {
-    public boolean isOverride();
+    boolean isOverride();
 
-    public String[] getInfos();
+    String[] getInfos();
 }

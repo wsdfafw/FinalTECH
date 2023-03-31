@@ -1,10 +1,14 @@
 package io.taraxacum.finaltech.core.menu.manual;
 
+import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.item.unusable.*;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
+import io.taraxacum.finaltech.core.item.unusable.CopyCard;
+import io.taraxacum.finaltech.core.item.unusable.StorageCard;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
+import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.StringItemUtil;
 import io.taraxacum.common.util.StringNumberUtil;
@@ -13,14 +17,13 @@ import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +44,343 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
 
     public static final List<Craft> CRAFT_LIST = new ArrayList<>();
     {
+        // entropy
+        CRAFT_LIST.add(new Craft() {
+            private final boolean enable = ConfigUtil.getOrDefaultItemSetting(true, CardOperationPortMenu.this.getID(), this.getId(), "enable");
+            private final String infoName = FinalTech.getLanguageString("items", CardOperationPortMenu.this.getID(), this.getId(), "info-icon", "name");
+            private final String[] infoLore = FinalTech.getLanguageStringArray("items", CardOperationPortMenu.this.getID(), this.getId(), "info-icon", "lore");
+            private final String infoOutput = FinalTech.getLanguageString("items", CardOperationPortMenu.this.getID(), this.getId(), "info-icon", "output");
+
+            @Nonnull
+            @Override
+            public String getId() {
+                return "entropy";
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return this.enable;
+            }
+
+            @Override
+            public String getInfoName() {
+                return this.infoName;
+            }
+
+            @Override
+            public String[] getInfoLore() {
+                return this.infoLore;
+            }
+
+            @Override
+            public String getInfoOutput() {
+                return this.infoOutput;
+            }
+
+            @Override
+            public boolean canCraft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2) {
+                if(ItemStackUtil.isItemNull(itemStack1) || ItemStackUtil.isItemNull(itemStack2)) {
+                    return false;
+                }
+
+                ItemStack itemEntropy = null;
+                ItemStack itemCard = null;
+                if(ItemStackUtil.isItemSimilar(itemStack1, FinalTechItemStacks.ENTROPY)) {
+                    itemEntropy = itemStack1;
+                } else if(FinalTechItems.COPY_CARD.verifyItem(itemStack1) || FinalTechItems.STORAGE_CARD.verifyItem(itemStack1)) {
+                    itemCard = itemStack1;
+                }
+
+                if(itemEntropy == null && itemCard == null) {
+                    return false;
+                }
+
+                if(itemEntropy == null && ItemStackUtil.isItemSimilar(itemStack2, FinalTechItemStacks.ENTROPY)) {
+                    itemEntropy = itemStack2;
+                } else if(itemCard == null && (FinalTechItems.COPY_CARD.verifyItem(itemStack2) || FinalTechItems.STORAGE_CARD.verifyItem(itemStack2))) {
+                    itemCard = itemStack2;
+                }
+
+                return itemEntropy != null && itemCard != null && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(itemCard));
+            }
+
+            @Override
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+                if(ItemStackUtil.isItemNull(itemStack1) || ItemStackUtil.isItemNull(itemStack2)) {
+                    return false;
+                }
+
+                ItemStack itemEntropy = null;
+                ItemStack itemCard = null;
+                if(ItemStackUtil.isItemSimilar(itemStack1, FinalTechItemStacks.ENTROPY)) {
+                    itemEntropy = itemStack1;
+                } else if(FinalTechItems.COPY_CARD.verifyItem(itemStack1) || FinalTechItems.STORAGE_CARD.verifyItem(itemStack1)) {
+                    itemCard = itemStack1;
+                }
+
+                if(itemEntropy == null && itemCard == null) {
+                    return false;
+                }
+
+                if(itemEntropy == null && ItemStackUtil.isItemSimilar(itemStack2, FinalTechItemStacks.ENTROPY)) {
+                    itemEntropy = itemStack2;
+                } else if(itemCard == null && (FinalTechItems.COPY_CARD.verifyItem(itemStack2) || FinalTechItems.STORAGE_CARD.verifyItem(itemStack2))) {
+                    itemCard = itemStack2;
+                }
+
+                if(itemEntropy == null || itemCard == null) {
+                    return false;
+                }
+
+                ItemMeta itemMeta = itemCard.getItemMeta();
+                String amount = StringItemUtil.parseAmountInCard(itemMeta);
+
+                ItemStack outputItem;
+                SlimefunItem slimefunItem = SlimefunItem.getByItem(itemCard);
+                if(slimefunItem instanceof StorageCard storageCard) {
+                    outputItem = storageCard.getValidItem(new ItemStack(FinalTechItemStacks.ENTROPY), amount);
+                } else if(slimefunItem instanceof CopyCard copyCard) {
+                    outputItem = copyCard.getValidItem(new ItemStack(FinalTechItemStacks.ENTROPY), amount);
+                } else {
+                    return false;
+                }
+
+                inventory.setItem(outputSlot, outputItem);
+                itemCard.setAmount(itemCard.getAmount() - 1);
+                itemEntropy.setAmount(itemEntropy.getAmount() - 1);
+
+                return true;
+            }
+        });
+        // craft-infinity-storage-card
+        CRAFT_LIST.add(new Craft() {
+            private final boolean enable = ConfigUtil.getOrDefaultItemSetting(true, CardOperationPortMenu.this.getID(), this.getId(), "enable");
+            private final String infoName = FinalTech.getLanguageString("items", CardOperationPortMenu.this.getID(), this.getId(), "info-icon", "name");
+            private final String[] infoLore = FinalTech.getLanguageStringArray("items", CardOperationPortMenu.this.getID(), this.getId(), "info-icon", "lore");
+            private final String infoOutput = FinalTech.getLanguageString("items", CardOperationPortMenu.this.getID(), this.getId(), "info-icon", "output");
+
+            @Nonnull
+            @Override
+            public String getId() {
+                return "craft-infinity-storage-card";
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return this.enable;
+            }
+
+            @Override
+            public String getInfoName() {
+                return this.infoName;
+            }
+
+            @Override
+            public String[] getInfoLore() {
+                return this.infoLore;
+            }
+
+            @Override
+            public String getInfoOutput() {
+                return this.infoOutput;
+            }
+
+            @Override
+            public boolean canCraft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2) {
+                if(ItemStackUtil.isItemNull(itemStack1) || ItemStackUtil.isItemNull(itemStack2)) {
+                    return false;
+                }
+
+                ItemStack itemPhony = null;
+                ItemStack itemCopyCard = null;
+                if(FinalTechItems.ITEM_PHONY.verifyItem(itemStack1)) {
+                    itemPhony = itemStack1;
+                } else if(FinalTechItems.COPY_CARD.verifyItem(itemStack1)) {
+                    itemCopyCard = itemStack1;
+                }
+
+                if(itemPhony == null && itemCopyCard == null) {
+                    return false;
+                }
+
+                if(itemPhony == null && FinalTechItems.ITEM_PHONY.verifyItem(itemStack2)) {
+                    itemPhony = itemStack2;
+                } else if(itemCopyCard == null && FinalTechItems.COPY_CARD.verifyItem(itemStack2)) {
+                    itemCopyCard = itemStack2;
+                }
+
+                return itemPhony != null && itemCopyCard != null && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(itemCopyCard));
+            }
+
+            @Override
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+                if(ItemStackUtil.isItemNull(itemStack1) || ItemStackUtil.isItemNull(itemStack2)) {
+                    return false;
+                }
+
+                ItemStack itemPhony = null;
+                ItemStack itemCopyCard = null;
+                if(FinalTechItems.ITEM_PHONY.verifyItem(itemStack1)) {
+                    itemPhony = itemStack1;
+                } else if(FinalTechItems.COPY_CARD.verifyItem(itemStack1)) {
+                    itemCopyCard = itemStack1;
+                }
+
+                if(itemPhony == null && itemCopyCard == null) {
+                    return false;
+                }
+
+                if(itemPhony == null && FinalTechItems.ITEM_PHONY.verifyItem(itemStack2)) {
+                    itemPhony = itemStack2;
+                } else if(itemCopyCard == null && FinalTechItems.COPY_CARD.verifyItem(itemStack2)) {
+                    itemCopyCard = itemStack2;
+                }
+
+                if(itemPhony == null || itemCopyCard == null) {
+                    return false;
+                }
+
+                ItemStack stringItem = StringItemUtil.parseItemInCard(itemCopyCard);
+                if(ItemStackUtil.isItemNull(stringItem)) {
+                    return false;
+                }
+
+                ItemStack outputItem = FinalTechItems.STORAGE_CARD.getValidItem(stringItem, StringNumberUtil.VALUE_INFINITY);
+
+                itemPhony.setAmount(itemPhony.getAmount() - 1);
+                itemCopyCard.setAmount(itemCopyCard.getAmount() - 1);
+                inventory.setItem(outputSlot, outputItem);
+
+                return true;
+            }
+        });
+        // distribute-storage-card
+        CRAFT_LIST.add(new Craft() {
+            private final boolean enable = ConfigUtil.getOrDefaultItemSetting(true, CardOperationPortMenu.this.getID(), this.getId(), "enable");
+            private final String infoName = FinalTech.getLanguageString("items", CardOperationPortMenu.this.getID(), this.getId(), "info-icon", "name");
+            private final String[] infoLore = FinalTech.getLanguageStringArray("items", CardOperationPortMenu.this.getID(), this.getId(), "info-icon", "lore");
+            private final String infoOutput = FinalTech.getLanguageString("items", CardOperationPortMenu.this.getID(), this.getId(), "info-icon", "output");
+
+            @Nonnull
+            @Override
+            public String getId() {
+                return "distribute-storage-card";
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return this.enable;
+            }
+
+            @Override
+            public String getInfoName() {
+                return this.infoName;
+            }
+
+            @Override
+            public String[] getInfoLore() {
+                return this.infoLore;
+            }
+
+            @Override
+            public String getInfoOutput() {
+                return this.infoOutput;
+            }
+
+            @Override
+            public boolean canCraft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2) {
+                if(ItemStackUtil.isItemNull(itemStack1) || ItemStackUtil.isItemNull(itemStack2)) {
+                    return false;
+                }
+
+                if(itemStack1.getAmount() > 1 || itemStack2.getAmount() > 1) {
+                    return false;
+                }
+
+                if(!FinalTechItems.STORAGE_CARD.verifyItem(itemStack1) || !FinalTechItems.STORAGE_CARD.verifyItem(itemStack2)) {
+                    return false;
+                }
+
+                ItemStack stringItem1 = StringItemUtil.parseItemInCard(itemStack1);
+                ItemStack stringItem2 = StringItemUtil.parseItemInCard(itemStack2);
+
+                if(ItemStackUtil.isItemNull(stringItem1) && ItemStackUtil.isItemNull(stringItem2)) {
+                    return false;
+                }
+
+                return ItemStackUtil.isItemNull(stringItem1) || ItemStackUtil.isItemNull(stringItem2);
+            }
+
+            @Override
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+                if(ItemStackUtil.isItemNull(itemStack1) || ItemStackUtil.isItemNull(itemStack2)) {
+                    return false;
+                }
+
+                if(itemStack1.getAmount() > 1 || itemStack2.getAmount() > 1) {
+                    return false;
+                }
+
+                if(!FinalTechItems.STORAGE_CARD.verifyItem(itemStack1) || !FinalTechItems.STORAGE_CARD.verifyItem(itemStack2)) {
+                    return false;
+                }
+
+                ItemMeta itemMeta1 = itemStack1.getItemMeta();
+                ItemMeta itemMeta2 = itemStack2.getItemMeta();
+
+                ItemStack stringItem1 = StringItemUtil.parseItemInCard(itemMeta1);
+                ItemStack stringItem2 = StringItemUtil.parseItemInCard(itemMeta2);
+
+                if(ItemStackUtil.isItemNull(stringItem1) && ItemStackUtil.isItemNull(stringItem2)) {
+                    return false;
+                }
+
+                ItemStack stringItem;
+                if(ItemStackUtil.isItemNull(stringItem1)) {
+                    stringItem = stringItem2;
+                } else if(ItemStackUtil.isItemNull(stringItem2)) {
+                    stringItem = stringItem1;
+                } else {
+                    return false;
+                }
+
+                String amount1 = StringItemUtil.parseAmountInCard(itemMeta1);
+                String amount2 = StringItemUtil.parseAmountInCard(itemMeta2);
+
+                String amount = StringNumberUtil.add(amount1, amount2);
+                String resultAmount1;
+                String resultAmount2;
+                if(StringNumberUtil.VALUE_INFINITY.equals(amount)) {
+                    resultAmount1 = StringNumberUtil.VALUE_INFINITY;
+                    resultAmount2 = StringNumberUtil.VALUE_INFINITY;
+                } else {
+                    resultAmount1 = new BigInteger(amount).divide(new BigInteger("2")).toString();
+                    resultAmount2 = StringNumberUtil.sub(amount, resultAmount1);
+                }
+
+                StringItemUtil.setItemInCard(itemMeta1, stringItem, resultAmount1);
+                StringItemUtil.setItemInCard(itemMeta2, stringItem, resultAmount2);
+
+
+                FinalTechItems.STORAGE_CARD.updateLore(itemMeta1);
+                FinalTechItems.STORAGE_CARD.updateLore(itemMeta2);
+
+                itemStack1.setItemMeta(itemMeta1);
+                itemStack2.setItemMeta(itemMeta2);
+
+                if(FinalTech.getRandom().nextBoolean()) {
+                    ItemStack outputItem = ItemStackUtil.cloneItem(itemStack1);
+                    itemStack1.setAmount(itemStack1.getAmount() - 1);
+                    inventory.setItem(outputSlot, outputItem);
+                } else {
+                    ItemStack outputItem = ItemStackUtil.cloneItem(itemStack2);
+                    itemStack2.setAmount(itemStack2.getAmount() - 1);
+                    inventory.setItem(outputSlot, outputItem);
+                }
+
+                return true;
+            }
+        });
         // merge-storage-card
         CRAFT_LIST.add(new Craft() {
             private final boolean enable = ConfigUtil.getOrDefaultItemSetting(true, CardOperationPortMenu.this.getID(), this.getId(), "enable");
@@ -61,7 +401,7 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
 
             @Override
             public String getInfoName() {
-                return infoName;
+                return this.infoName;
             }
 
             @Override
@@ -75,38 +415,30 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
             }
 
             @Override
-            public boolean canCraft(@Nullable ItemStack item1, @Nullable ItemStack item2) {
-                if (!ItemStackUtil.isItemNull(item1) && !ItemStackUtil.isItemNull(item2) && StorageCard.isValid(item1) && StorageCard.isValid(item2)) {
-                    ItemStack stringItem1 = StringItemUtil.parseItemInCard(item1);
-                    ItemStack stringItem2 = StringItemUtil.parseItemInCard(item2);
-                    return ItemStackUtil.isItemSimilar(stringItem1, stringItem2);
+            public boolean canCraft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2) {
+                if (!ItemStackUtil.isItemNull(itemStack1) && !ItemStackUtil.isItemNull(itemStack2) && FinalTechItems.STORAGE_CARD.verifyItem(itemStack1) && FinalTechItems.STORAGE_CARD.verifyItem(itemStack2)) {
+                    ItemStack stringItem1 = StringItemUtil.parseItemInCard(itemStack1);
+                    ItemStack stringItem2 = StringItemUtil.parseItemInCard(itemStack2);
+                    return !ItemStackUtil.isItemNull(stringItem1) && !ItemStackUtil.isItemNull(stringItem2) && ItemStackUtil.isItemSimilar(stringItem1, stringItem2);
                 }
                 return false;
             }
 
             @Override
-            public void doUpdateIcon(@Nonnull ItemStack iconItem) {
-                iconItem.setType(Material.GREEN_STAINED_GLASS_PANE);
-                ItemStackUtil.setItemName(iconItem, this.infoName);
-                ItemStackUtil.setLore(iconItem, infoLore);
-            }
-
-            @Override
-            public boolean craft(@Nullable ItemStack item1, @Nullable ItemStack item2, @Nonnull Inventory inventory, int outputSlot) {
-                if (!ItemStackUtil.isItemNull(item1) && !ItemStackUtil.isItemNull(item2) && item1.hasItemMeta() && item2.hasItemMeta()) {
-                    ItemMeta itemMeta1 = item1.getItemMeta();
-                    ItemMeta itemMeta2 = item2.getItemMeta();
-                    if (StorageCard.isValid(itemMeta1) && StorageCard.isValid(itemMeta2)) {
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+                if (!ItemStackUtil.isItemNull(itemStack1) && !ItemStackUtil.isItemNull(itemStack2) && itemStack1.hasItemMeta() && itemStack2.hasItemMeta()) {
+                    ItemMeta itemMeta1 = itemStack1.getItemMeta();
+                    ItemMeta itemMeta2 = itemStack2.getItemMeta();
+                    if (FinalTechItems.STORAGE_CARD.verifyItem(itemStack1) && FinalTechItems.STORAGE_CARD.verifyItem(itemStack2)) {
                         ItemStack stringItem1 = StringItemUtil.parseItemInCard(itemMeta1);
                         ItemStack stringItem2 = StringItemUtil.parseItemInCard(itemMeta2);
-                        if (ItemStackUtil.isItemSimilar(stringItem1, stringItem2)) {
+                        if (!ItemStackUtil.isItemNull(stringItem1) && !ItemStackUtil.isItemNull(stringItem2) && ItemStackUtil.isItemSimilar(stringItem1, stringItem2)) {
                             String amount1 = StringItemUtil.parseAmountInCard(itemMeta1);
                             String amount2 = StringItemUtil.parseAmountInCard(itemMeta2);
-                            ItemStack outputItem = StorageCard.newItem();
-                            StringItemUtil.setItemInCard(outputItem, stringItem1, StringNumberUtil.add(amount1, amount2));
-                            StorageCard.updateLore(outputItem);
-                            item1.setAmount(item1.getAmount() - 1);
-                            item2.setAmount(item2.getAmount() - 1);
+                            ItemStack outputItem = FinalTechItems.STORAGE_CARD.getValidItem(stringItem1, StringNumberUtil.add(amount1, amount2));
+                            FinalTechItems.STORAGE_CARD.updateLore(outputItem);
+                            itemStack1.setAmount(itemStack1.getAmount() - 1);
+                            itemStack2.setAmount(itemStack2.getAmount() - 1);
                             inventory.setItem(outputSlot, outputItem);
                             return true;
                         }
@@ -149,30 +481,23 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
             }
 
             @Override
-            public boolean canCraft(@Nullable ItemStack item1, @Nullable ItemStack item2) {
-                if (!ItemStackUtil.isItemNull(item1) && CopyCard.isValid(item1) && Shell.isValid(item2) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(item1))) {
+            public boolean canCraft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2) {
+                if (!ItemStackUtil.isItemNull(itemStack1) && FinalTechItems.COPY_CARD.verifyItem(itemStack1) && FinalTechItems.SHELL.verifyItem(itemStack2) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(itemStack1))) {
                     return true;
-                } else return !ItemStackUtil.isItemNull(item2) && CopyCard.isValid(item2) && Shell.isValid(item1) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(item2));
+                } else return !ItemStackUtil.isItemNull(itemStack2) && FinalTechItems.COPY_CARD.verifyItem(itemStack2) && FinalTechItems.SHELL.verifyItem(itemStack1) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(itemStack2));
             }
 
             @Override
-            public void doUpdateIcon(@Nonnull ItemStack iconItem) {
-                iconItem.setType(Material.GREEN_STAINED_GLASS_PANE);
-                ItemStackUtil.setItemName(iconItem, this.infoName);
-                ItemStackUtil.setLore(iconItem, infoLore);
-            }
-
-            @Override
-            public boolean craft(@Nullable ItemStack item1, @Nullable ItemStack item2, @Nonnull Inventory inventory, int outputSlot) {
-                if (!ItemStackUtil.isItemNull(item1) && CopyCard.isValid(item1) && Shell.isValid(item2) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(item1))) {
-                    item2.setAmount(item2.getAmount() - 1);
-                    ItemStack outputItem = ItemStackUtil.cloneItem(item1);
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+                if (!ItemStackUtil.isItemNull(itemStack1) && FinalTechItems.COPY_CARD.verifyItem(itemStack1) && FinalTechItems.SHELL.verifyItem(itemStack2) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(itemStack1))) {
+                    itemStack2.setAmount(itemStack2.getAmount() - 1);
+                    ItemStack outputItem = ItemStackUtil.cloneItem(itemStack1);
                     outputItem.setAmount(1);
                     inventory.setItem(outputSlot, outputItem);
                     return true;
-                } else if (!ItemStackUtil.isItemNull(item2) && CopyCard.isValid(item2) && Shell.isValid(item1) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(item2))) {
-                    item1.setAmount(item1.getAmount() - 1);
-                    ItemStack outputItem = ItemStackUtil.cloneItem(item2);
+                } else if (!ItemStackUtil.isItemNull(itemStack2) && FinalTechItems.COPY_CARD.verifyItem(itemStack2) && FinalTechItems.SHELL.verifyItem(itemStack1) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(itemStack2))) {
+                    itemStack1.setAmount(itemStack1.getAmount() - 1);
+                    ItemStack outputItem = ItemStackUtil.cloneItem(itemStack2);
                     outputItem.setAmount(1);
                     inventory.setItem(outputSlot, outputItem);
                     return true;
@@ -214,32 +539,18 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
             }
 
             @Override
-            public boolean canCraft(@Nullable ItemStack item1, @Nullable ItemStack item2) {
-                if (Singularity.isValid(item1) && Spirochete.isValid(item2)) {
+            public boolean canCraft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2) {
+                if (FinalTechItems.SINGULARITY.verifyItem(itemStack1) && FinalTechItems.SPIROCHETE.verifyItem(itemStack2)) {
                     return true;
-                } else return Spirochete.isValid(item1) && Singularity.isValid(item2);
+                } else return FinalTechItems.SPIROCHETE.verifyItem(itemStack1) && FinalTechItems.SINGULARITY.verifyItem(itemStack2);
             }
 
             @Override
-            public void doUpdateIcon(@Nonnull ItemStack iconItem) {
-                iconItem.setType(Material.GREEN_STAINED_GLASS_PANE);
-                ItemStackUtil.setItemName(iconItem, this.infoName);
-                ItemStackUtil.setLore(iconItem, infoLore);
-            }
-
-            @Override
-            public boolean craft(@Nullable ItemStack item1, @Nullable ItemStack item2, @Nonnull Inventory inventory, int outputSlot) {
-                if (this.canCraft(item1, item2)) {
-                    item1.setAmount(item1.getAmount() - 1);
-                    item2.setAmount(item2.getAmount() - 1);
-                    Player player = null;
-                    for (HumanEntity humanEntity : inventory.getViewers()) {
-                        if (humanEntity instanceof Player) {
-                            player = (Player) humanEntity;
-                            break;
-                        }
-                    }
-                    inventory.setItem(outputSlot, ItemPhony.newItem(item1, item2, player));
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+                if (this.canCraft(itemStack1, itemStack2)) {
+                    itemStack1.setAmount(itemStack1.getAmount() - 1);
+                    itemStack2.setAmount(itemStack2.getAmount() - 1);
+                    inventory.setItem(outputSlot, FinalTechItems.ITEM_PHONY.getValidItem());
                     return true;
                 }
                 return false;
@@ -279,41 +590,20 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
             }
 
             @Override
-            public boolean canCraft(@Nullable ItemStack item1, @Nullable ItemStack item2) {
-                return Singularity.isValid(item1) || Singularity.isValid(item2) || Spirochete.isValid(item1) || Spirochete.isValid(item2);
+            public boolean canCraft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2) {
+                return FinalTechItems.SINGULARITY.verifyItem(itemStack1) || FinalTechItems.SINGULARITY.verifyItem(itemStack2) || FinalTechItems.SPIROCHETE.verifyItem(itemStack1) || FinalTechItems.SPIROCHETE.verifyItem(itemStack2);
             }
 
             @Override
-            public void doUpdateIcon(@Nonnull ItemStack iconItem) {
-                iconItem.setType(Material.GREEN_STAINED_GLASS_PANE);
-                ItemStackUtil.setItemName(iconItem, this.infoName);
-                ItemStackUtil.setLore(iconItem, infoLore);
-            }
-
-            @Override
-            public boolean craft(@Nullable ItemStack item1, @Nullable ItemStack item2, @Nonnull Inventory inventory, int outputSlot) {
-                if (Singularity.isValid(item1) || Spirochete.isValid(item1)) {
-                    item1.setAmount(item1.getAmount() - 1);
-                    Player player = null;
-                    for (HumanEntity humanEntity : inventory.getViewers()) {
-                        if (humanEntity instanceof Player) {
-                            player = (Player) humanEntity;
-                            break;
-                        }
-                    }
-                    ItemStack outputItem = Shell.newItem(item1, player);
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+                if (FinalTechItems.SINGULARITY.verifyItem(itemStack1) || FinalTechItems.SPIROCHETE.verifyItem(itemStack1)) {
+                    itemStack1.setAmount(itemStack1.getAmount() - 1);
+                    ItemStack outputItem = FinalTechItems.SHELL.getValidItem();
                     inventory.setItem(outputSlot, outputItem);
                     return true;
-                } else if (Singularity.isValid(item2) || Spirochete.isValid(item2)) {
-                    item2.setAmount(item2.getAmount() - 1);
-                    Player player = null;
-                    for (HumanEntity humanEntity : inventory.getViewers()) {
-                        if (humanEntity instanceof Player) {
-                            player = (Player) humanEntity;
-                            break;
-                        }
-                    }
-                    ItemStack outputItem = Shell.newItem(item2, player);
+                } else if (FinalTechItems.SINGULARITY.verifyItem(itemStack2) || FinalTechItems.SPIROCHETE.verifyItem(itemStack2)) {
+                    itemStack2.setAmount(itemStack2.getAmount() - 1);
+                    ItemStack outputItem = FinalTechItems.SHELL.getValidItem();
                     inventory.setItem(outputSlot, outputItem);
                     return true;
                 }
@@ -354,40 +644,19 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
             }
 
             @Override
-            public boolean canCraft(@Nullable ItemStack item1, @Nullable ItemStack item2) {
-                return (CopyCard.isValid(item1) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(item1))) || (CopyCard.isValid(item2) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(item2)));
+            public boolean canCraft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2) {
+                return (FinalTechItems.COPY_CARD.verifyItem(itemStack1) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(itemStack1))) || (FinalTechItems.COPY_CARD.verifyItem(itemStack2) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(itemStack2)));
             }
 
             @Override
-            public void doUpdateIcon(@Nonnull ItemStack iconItem) {
-                iconItem.setType(Material.GREEN_STAINED_GLASS_PANE);
-                ItemStackUtil.setItemName(iconItem, this.infoName);
-                ItemStackUtil.setLore(iconItem, infoLore);
-            }
-
-            @Override
-            public boolean craft(@Nullable ItemStack item1, @Nullable ItemStack item2, @Nonnull Inventory inventory, int outputSlot) {
-                if (CopyCard.isValid(item1) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(item1))) {
-                    item1.setAmount(item1.getAmount() - 1);
-                    Player player = null;
-                    for (HumanEntity humanEntity : inventory.getViewers()) {
-                        if (humanEntity instanceof Player) {
-                            player = (Player) humanEntity;
-                            break;
-                        }
-                    }
-                    inventory.setItem(outputSlot, Annular.newItem(item1, player));
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+                if (FinalTechItems.COPY_CARD.verifyItem(itemStack1) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(itemStack1))) {
+                    itemStack1.setAmount(itemStack1.getAmount() - 1);
+                    inventory.setItem(outputSlot, FinalTechItems.ANNULAR.getValidItem());
                     return true;
-                } else if (CopyCard.isValid(item2) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(item2))) {
-                    item2.setAmount(item2.getAmount() - 1);
-                    Player player = null;
-                    for (HumanEntity humanEntity : inventory.getViewers()) {
-                        if (humanEntity instanceof Player) {
-                            player = (Player) humanEntity;
-                            break;
-                        }
-                    }
-                    inventory.setItem(outputSlot, Annular.newItem(item2, player));
+                } else if (FinalTechItems.COPY_CARD.verifyItem(itemStack2) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(itemStack2))) {
+                    itemStack2.setAmount(itemStack2.getAmount() - 1);
+                    inventory.setItem(outputSlot, FinalTechItems.ANNULAR.getValidItem());
                     return true;
                 }
                 return false;
@@ -496,7 +765,11 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
 
         boolean canCraft(@Nullable ItemStack item1, @Nullable ItemStack item2);
 
-        void doUpdateIcon(@Nonnull ItemStack iconItem);
+        default void doUpdateIcon(@Nonnull ItemStack iconItem) {
+            iconItem.setType(Material.GREEN_STAINED_GLASS_PANE);
+            ItemStackUtil.setItemName(iconItem, this.getInfoName());
+            ItemStackUtil.setLore(iconItem, this.getInfoLore());
+        }
 
         boolean craft(@Nullable ItemStack item1, @Nullable ItemStack item2, @Nonnull Inventory inventory, int outputSlot);
     }

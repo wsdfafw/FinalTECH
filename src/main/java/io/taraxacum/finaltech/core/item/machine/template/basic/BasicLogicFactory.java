@@ -3,7 +3,7 @@ package io.taraxacum.finaltech.core.item.machine.template.basic;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
-import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -17,6 +17,6 @@ public class BasicLogicFactory extends AbstractBasicMachine {
 
     @Override
     public void registerDefaultRecipes() {
-        this.registerRecipe(new ItemStack[]{FinalTechItems.LOGIC_FALSE, FinalTechItems.LOGIC_TRUE, FinalTechItems.BUG}, new ItemStack[]{FinalTechItems.ENTROPY});
+        this.registerRecipe(new ItemStack[]{FinalTechItemStacks.LOGIC_FALSE, FinalTechItemStacks.LOGIC_TRUE, FinalTechItemStacks.BUG}, new ItemStack[]{FinalTechItemStacks.ENTROPY});
     }
 }

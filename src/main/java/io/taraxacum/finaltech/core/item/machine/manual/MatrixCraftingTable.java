@@ -4,14 +4,14 @@ import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
-import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
-import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
+import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.helper.Icon;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.manual.AbstractManualMachineMenu;
 import io.taraxacum.finaltech.core.menu.manual.MatrixCraftingTableMenu;
-import io.taraxacum.finaltech.setup.FinalTechRecipes;
-import io.taraxacum.finaltech.util.MachineUtil;
+import io.taraxacum.finaltech.setup.FinalTechRecipeTypes;
 import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.libs.slimefun.dto.RecipeTypeRegistry;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
@@ -19,6 +19,8 @@ import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Final_ROOT
@@ -45,6 +47,19 @@ public class MatrixCraftingTable extends AbstractManualMachine implements Recipe
 
     @Override
     public void registerDefaultRecipes() {
-        RecipeUtil.registerRecipeByRecipeType(this, FinalTechRecipes.RECIPE_TYPE_MATRIX_CRAFTING_TABLE);
+        RecipeUtil.registerDescriptiveRecipeWithBorder(FinalTech.getLanguageManager(), this);
+
+        RecipeUtil.registerRecipeByRecipeType(this, FinalTechRecipeTypes.MATRIX_CRAFTING_TABLE);
+    }
+
+    @Nonnull
+    @Override
+    public List<ItemStack> getDisplayRecipes() {
+        List<ItemStack> itemStackList = new ArrayList<>();
+        for(SlimefunItem slimefunItem : RecipeTypeRegistry.getInstance().getByRecipeType(FinalTechRecipeTypes.MATRIX_CRAFTING_TABLE)) {
+            itemStackList.add(Icon.BORDER_ICON);
+            itemStackList.add(slimefunItem.getRecipeOutput());
+        }
+        return itemStackList;
     }
 }

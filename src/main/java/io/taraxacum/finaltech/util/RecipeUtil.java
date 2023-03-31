@@ -11,10 +11,10 @@ import io.github.thebusybiscuit.slimefun4.implementation.items.tools.GoldPan;
 import io.github.thebusybiscuit.slimefun4.implementation.items.tools.NetherGoldPan;
 import io.github.thebusybiscuit.slimefun4.implementation.settings.GoldPanDrop;
 import io.taraxacum.common.util.ReflectionUtil;
+import io.taraxacum.finaltech.core.item.unusable.ReplaceableCard;
 import io.taraxacum.libs.slimefun.dto.RandomMachineRecipe;
 import io.taraxacum.libs.plugin.dto.LanguageManager;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
 import org.bukkit.Material;
@@ -131,6 +131,14 @@ public class RecipeUtil {
         }
     }
 
+    public static void registerDescriptiveRecipeWithBorder(@Nonnull LanguageManager languageManager, @Nonnull RecipeItem recipeItem, String... strings) {
+        String id = recipeItem.getId();
+        if(languageManager.containPath("items", id, "info")) {
+            registerDescriptiveRecipe(languageManager, recipeItem, strings);
+            recipeItem.registerBorder();
+        }
+    }
+
     public static void registerDescriptiveRecipe(@Nonnull LanguageManager languageManager, @Nonnull RecipeItem recipeItem, String... strings) {
         String id = recipeItem.getId();
         int i = 1;
@@ -211,21 +219,16 @@ public class RecipeUtil {
     }
 
     /**
-     * @return The #{@link io.taraxacum.finaltech.core.item.unusable.liquid.LiquidCard} in #{@link ItemStack}
+     * @return The #{@link ReplaceableCard} in #{@link ItemStack}
      */
     @Nullable
-    public static ItemStack getLiquidCard(@Nullable ItemStack item) {
-        if (ItemStackUtil.isItemNull(item)) {
+    public static ReplaceableCard getReplaceableCard(@Nullable ItemStack itemStack) {
+        if (ItemStackUtil.isItemNull(itemStack) || ReplaceableCard.getByMaterial(itemStack.getType()) == null) {
             return null;
         }
-        if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+        if (!ItemStackUtil.isItemSimilar(itemStack, new ItemStack(itemStack.getType()))) {
             return null;
         }
-        return switch (item.getType()) {
-            case WATER_BUCKET -> new ItemStack(FinalTechItems.WATER_CARD);
-            case LAVA_BUCKET -> new ItemStack(FinalTechItems.LAVA_CARD);
-            case MILK_BUCKET -> new ItemStack(FinalTechItems.MILK_CARD);
-            default -> null;
-        };
+        return ReplaceableCard.getByMaterial(itemStack.getType());
     }
 }

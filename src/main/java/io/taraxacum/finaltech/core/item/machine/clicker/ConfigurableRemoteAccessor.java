@@ -14,8 +14,12 @@ import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 
+/**
+ * @author Final_ROOT
+ * @since 2.2
+ */
 public class ConfigurableRemoteAccessor extends AbstractClickerMachine implements RecipeItem {
-    public static final int RANGE = ConfigUtil.getOrDefaultItemSetting(16, SfItemUtil.getIdFormatName(RemoteAccessor.class), "range");
+    private final int range = ConfigUtil.getOrDefaultItemSetting(16, this, "range");
 
     public ConfigurableRemoteAccessor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -24,12 +28,12 @@ public class ConfigurableRemoteAccessor extends AbstractClickerMachine implement
     @Nonnull
     @Override
     protected AbstractMachineMenu setMachineMenu() {
-        return new ConfigurableRemoteAccessorMenu(this);
+        return new ConfigurableRemoteAccessorMenu(this, range);
     }
 
     @Override
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
-                String.valueOf(RANGE));
+                String.valueOf(this.range));
     }
 }

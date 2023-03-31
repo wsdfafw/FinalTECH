@@ -4,17 +4,17 @@ tweak:
   range-limit:
     FINALTECH_ITEM_DISMANTLE_TABLE:
       range: 128
-      mul-range: 2
+      mul-range: 4
       drop-self: false
       message: '{1} is not allowed to be placed too closely'
     FINALTECH_ORDERED_DUST_FACTORY_DIRT:
       range: 128
-      mul-range: 2
+      mul-range: 4
       drop-self: false
       message: '{1} is not allowed to be placed too closely'
     FINALTECH_ORDERED_DUST_FACTORY_STONE:
       range: 128
-      mul-range: 2
+      mul-range: 4
       drop-self: false
       message: '{1} is not allowed to be placed too closely'
   performance-limit:

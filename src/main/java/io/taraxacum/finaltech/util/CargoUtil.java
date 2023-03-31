@@ -730,8 +730,8 @@ public class CargoUtil {
             }
         } else {
             BlockState blockState = block.getState();
-            if (blockState instanceof InventoryHolder) {
-                inventory = ((InventoryHolder) blockState).getInventory();
+            if (blockState instanceof InventoryHolder inventoryHolder) {
+                inventory = inventoryHolder.getInventory();
                 slots = new int[inventory.getSize()];
                 // TODO:
                 for (int i = 0; i < slots.length; i++) {

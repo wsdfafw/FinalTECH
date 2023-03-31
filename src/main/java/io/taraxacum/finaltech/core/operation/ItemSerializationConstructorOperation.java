@@ -1,7 +1,7 @@
 package io.taraxacum.finaltech.core.operation;
 
 import io.github.thebusybiscuit.slimefun4.core.machines.MachineOperation;
-import io.taraxacum.finaltech.core.item.unusable.CopyCard;
+import io.taraxacum.finaltech.setup.FinalTechItems;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -17,10 +17,10 @@ public interface ItemSerializationConstructorOperation extends MachineOperation 
     int ERROR_ITEM = -1;
 
     static int getType(@Nonnull ItemStack item) {
-        if (CopyCard.isValid(item)) {
+        if (FinalTechItems.COPY_CARD.verifyItem(item)) {
             return ITEM_PHONY;
         }
-        if (CopyCard.copiableItem(item)) {
+        if (FinalTechItems.COPY_CARD.isTargetItem(item)) {
             return COPY_CARD;
         }
         return ERROR_ITEM;

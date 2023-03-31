@@ -51,6 +51,5 @@ public class ExtractionMachineMenu extends AbstractMachineMenu {
     @Override
     public void init() {
         super.init();
-        this.setSize(54);
     }
 }

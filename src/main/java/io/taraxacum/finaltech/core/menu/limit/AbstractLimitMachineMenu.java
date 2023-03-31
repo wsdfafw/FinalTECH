@@ -23,7 +23,7 @@ import java.util.ArrayList;
  * @since 2.0
  */
 public abstract class AbstractLimitMachineMenu extends AbstractMachineMenu {
-    private static final int MACHINE_MAX_STACK_SLOT = 13;
+    private final int MACHINE_MAX_STACK_SLOT = 13;
 
     public AbstractLimitMachineMenu(@Nonnull AbstractMachine abstractMachine) {
         super(abstractMachine);

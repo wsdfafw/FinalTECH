@@ -16,12 +16,13 @@ import io.taraxacum.finaltech.util.LocationUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
+import io.taraxacum.libs.slimefun.dto.LocationInfo;
+import io.taraxacum.libs.slimefun.util.BlockStorageConfigUtil;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -29,12 +30,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Final_ROOT
  * @since 2.2
  */
 public class ConsumableSimulateClickMachine extends AbstractTower implements RecipeItem {
+    private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
     private final double rangeRate = ConfigUtil.getOrDefaultItemSetting(0.4, this, "range-rate");
 
     public ConsumableSimulateClickMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
@@ -64,33 +68,36 @@ public class ConsumableSimulateClickMachine extends AbstractTower implements Rec
         Location location = block.getLocation();
         BlockMenu blockMenu = BlockStorage.getInventory(block);
 
-        ItemStack item = blockMenu.getItemInSlot(this.getInputSlot()[0]);
+        ItemStack itemStack = blockMenu.getItemInSlot(this.getInputSlot()[0]);
 
-        if (ItemStackUtil.isItemNull(item)) {
+        if (ItemStackUtil.isItemNull(itemStack)) {
             return;
         }
 
         int digit = 0;
-        SlimefunItem sfItem = SlimefunItem.getByItem(item);
+        SlimefunItem sfItem = SlimefunItem.getByItem(itemStack);
         if(sfItem instanceof DigitalItem digitalItem) {
             digit = digitalItem.getDigit();
         }
 
         if(digit > 0) {
             location.setY(location.getY() - 1);
-            Block targetBlock = block.getRelative(BlockFace.DOWN);
 
-            if(BlockStorage.hasBlockInfo(location) && BlockStorage.hasInventory(targetBlock)) {
-                item.setAmount(item.getAmount() - 1);
+            LocationInfo locationInfo = LocationInfo.get(location);
+            if(locationInfo != null && !this.notAllowedId.contains(locationInfo.getId())) {
+                itemStack.setAmount(itemStack.getAmount() - 1);
 
                 double range = digit * this.rangeRate;
 
                 JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
                 javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
-                    BlockMenu targetBlockMenu = BlockStorage.getInventory(targetBlock);
-                    for (Entity entity : location.getWorld().getNearbyEntities(LocationUtil.getCenterLocation(targetBlock), range, range, range, entity -> entity instanceof Player)) {
-                        if(targetBlockMenu.canOpen(targetBlock, (Player) entity)) {
-                            targetBlockMenu.open((Player) entity);
+                    BlockMenu targetBlockMenu = BlockStorage.getInventory(location);
+                    if(targetBlockMenu != null) {
+                        Block targetBlock = location.getBlock();
+                        for (Entity entity : location.getWorld().getNearbyEntities(LocationUtil.getCenterLocation(targetBlock), range, range, range, entity -> entity instanceof Player)) {
+                            if(targetBlockMenu.canOpen(targetBlock, (Player) entity)) {
+                                targetBlockMenu.open((Player) entity);
+                            }
                         }
                     }
                 });

@@ -52,4 +52,17 @@ public class ReflectionUtil {
         }
         return null;
     }
+
+    public static <T, V> T getProperty(Object o, Class<V> clazz, String fieldName) throws IllegalAccessException {
+        Field field = getField(clazz, fieldName);
+        if(field != null) {
+            boolean b = field.canAccess(o);
+            field.setAccessible(true);
+            Object result = field.get(o);
+            field.setAccessible(b);
+            return (T) result;
+        }
+
+        return null;
+    }
 }

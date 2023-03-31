@@ -8,6 +8,7 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.libraries.paperlib.PaperLib;
+import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.dto.CargoDTO;
 import io.taraxacum.finaltech.core.dto.SimpleCargoDTO;
@@ -15,7 +16,7 @@ import io.taraxacum.finaltech.core.helper.*;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.cargo.AdvancedPointTransferMenu;
-import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.util.*;
 import io.taraxacum.libs.plugin.dto.InvWithSlots;
 import io.taraxacum.libs.plugin.dto.ServerRunnableLockFactory;
@@ -46,7 +47,8 @@ import java.util.Set;
  * @since 1.0
  */
 public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
-    private final double particleDistance = 0.22;
+    private final double particleDistance = 0.25;
+    private final int particleInterval = 2;
     private final int range = ConfigUtil.getOrDefaultItemSetting(8, this, "range");
 
     public AdvancedPointTransfer(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
@@ -99,7 +101,7 @@ public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
         Location location = block.getLocation();
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
         boolean primaryThread = javaPlugin.getServer().isPrimaryThread();
-        boolean drawParticle = blockMenu.hasViewer();
+        boolean drawParticle = blockMenu.hasViewer() || RouteShow.VALUE_TRUE.equals(RouteShow.HELPER.getOrDefaultValue(config));
 
         if (primaryThread) {
             BlockData blockData = block.getState().getBlockData();
@@ -119,7 +121,7 @@ public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
             }
 
             if (drawParticle) {
-                javaPlugin.getServer().getScheduler().runTaskLaterAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.COMPOSTER, 0, inputBlock, outputBlock), Slimefun.getTickerTask().getTickRate());
+                javaPlugin.getServer().getScheduler().runTaskLaterAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, inputBlock, outputBlock), Slimefun.getTickerTask().getTickRate());
             }
 
             String inputSlotSearchSize = SlotSearchSize.INPUT_HELPER.getOrDefaultValue(config);
@@ -195,7 +197,7 @@ public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
                     }
 
                     if (drawParticle) {
-                        javaPlugin.getServer().getScheduler().runTaskLaterAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.COMPOSTER, 0, inputBlock, outputBlock), Slimefun.getTickerTask().getTickRate());
+                        javaPlugin.getServer().getScheduler().runTaskLaterAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, inputBlock, outputBlock), Slimefun.getTickerTask().getTickRate());
                     }
 
                     int cargoNumber = Integer.parseInt(CargoNumber.HELPER.getOrDefaultValue(config));
@@ -216,26 +218,27 @@ public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
         int count = 1;
         if (BlockSearchMode.VALUE_ZERO.equals(searchMode)) {
             particleLocationList.add(LocationUtil.getCenterLocation(result));
-            if (drawParticle) {
+            if (drawParticle && FinalTech.getSlimefunTickCount() % this.particleInterval == 0) {
                 JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-                javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(javaPlugin, Particle.COMPOSTER, Slimefun.getTickerTask().getTickRate() * 50L / particleLocationList.size(), particleDistance, particleLocationList));
+                javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(javaPlugin, Particle.CRIT_MAGIC, this.particleInterval * Slimefun.getTickerTask().getTickRate() * 50L / particleLocationList.size(), this.particleDistance, input ? JavaUtil.reserve(particleLocationList) : particleLocationList));
             }
             return result;
         }
         Set<Location> locationSet = new HashSet<>();
         locationSet.add(begin.getLocation());
         while(true) {
-            particleLocationList.add(LocationUtil.getCenterLocation(result));
-            if (BlockStorage.hasInventory(result) && !result.getType().equals(FinalTechItems.POINT_TRANSFER.getType())) {
+            if (BlockStorage.hasInventory(result) && !result.getType().equals(FinalTechItemStacks.POINT_TRANSFER.getType())) {
+                particleLocationList.add(LocationUtil.getCenterLocation(result));
                 break;
             }
             if (PaperLib.getBlockState(result, false).getState() instanceof InventoryHolder) {
+                particleLocationList.add(LocationUtil.getCenterLocation(result));
                 break;
             }
-            if (result.getType() == FinalTechItems.POINT_TRANSFER.getType()) {
+            if (result.getType() == FinalTechItemStacks.POINT_TRANSFER.getType()) {
+                particleLocationList.add(LocationUtil.getCenterLocation(result));
                 count = 0;
                 if (locationSet.contains(result.getLocation())) {
-                    particleLocationList.add(LocationUtil.getCenterLocation(result));
                     break;
                 }
                 locationSet.add(result.getLocation());
@@ -251,12 +254,13 @@ public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
             }
             result = result.getRelative(blockFace);
             if (count++ > this.range) {
+                particleLocationList.add(LocationUtil.getCenterLocation(result));
                 break;
             }
         }
-        if (drawParticle) {
+        if (drawParticle && FinalTech.getSlimefunTickCount() % this.particleInterval == 0) {
             JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(javaPlugin, Particle.COMPOSTER, Slimefun.getTickerTask().getTickRate() * 50L / particleLocationList.size(), particleDistance, particleLocationList));
+            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(javaPlugin, Particle.CRIT_MAGIC, this.particleInterval * Slimefun.getTickerTask().getTickRate() * 50L / particleLocationList.size(), this.particleDistance, input ? JavaUtil.reserve(particleLocationList) : particleLocationList));
         }
         return result;
     }

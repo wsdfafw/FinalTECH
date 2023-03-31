@@ -23,11 +23,10 @@ import javax.annotation.Nullable;
  */
 // TODO: Optimization
 public abstract class AbstractMachine extends AbstractMySlimefunItem {
-    private final AbstractMachineMenu menu;
+    private AbstractMachineMenu menu;
 
     public AbstractMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
-        this.menu = this.setMachineMenu();
     }
 
     @Override
@@ -35,6 +34,7 @@ public abstract class AbstractMachine extends AbstractMySlimefunItem {
         super.preRegister();
         this.addItemHandler(this.onBlockBreak());
         this.addItemHandler(this.onBlockPlace());
+        this.menu = this.setMachineMenu();
 
         if (FinalTech.getMultiThreadLevel() == 2) {
             this.getAddon().getJavaPlugin().getLogger().info(this.getId() + "(" + this.getItemName() + ")" + " is optimized for multi-thread！！！");

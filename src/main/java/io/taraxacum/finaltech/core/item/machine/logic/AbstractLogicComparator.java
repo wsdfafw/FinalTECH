@@ -20,6 +20,10 @@ import org.bukkit.inventory.ItemStack;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * @author Final_ROOT
+ * @since 2.1
+ */
 public abstract class AbstractLogicComparator extends AbstractMachine {
     public AbstractLogicComparator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);

@@ -6,7 +6,9 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
+import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
@@ -17,6 +19,7 @@ import io.taraxacum.finaltech.core.menu.machine.ExtractionMachineMenu;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
+import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.block.Block;
@@ -29,7 +32,7 @@ import java.util.List;
  * @author Final_ROOT
  * @since 2.0
  */
-public abstract class AbstractExtractionMachine extends AbstractMachine {
+public abstract class AbstractExtractionMachine extends AbstractMachine implements RecipeItem {
     public AbstractExtractionMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
     }
@@ -63,7 +66,7 @@ public abstract class AbstractExtractionMachine extends AbstractMachine {
         ItemWrapper itemWrapper = new ItemWrapper(item);
         int matchAmount = 0;
         ItemAmountWrapper[] outputItems = null;
-        List<AdvancedMachineRecipe> advancedRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getClass());
+        List<AdvancedMachineRecipe> advancedRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getId());
         for (AdvancedMachineRecipe advancedMachineRecipe : advancedRecipeList) {
             if (itemWrapper.getItemStack().getAmount() >= advancedMachineRecipe.getInput()[0].getAmount() && ItemStackUtil.isItemSimilar(advancedMachineRecipe.getInput()[0], itemWrapper)) {
                 outputItems = advancedMachineRecipe.getOutput();
@@ -85,5 +88,19 @@ public abstract class AbstractExtractionMachine extends AbstractMachine {
     @Override
     protected boolean isSynchronized() {
         return false;
+    }
+
+    @Override
+    public void registerRecipe(@Nonnull MachineRecipe recipe) {
+        if (recipe.getInput().length != 1) {
+            throw new IllegalArgumentException("Register recipe for " + this.getItemName() + " has occurred a error: " + " input item type should be only just one");
+        }
+
+        if (recipe.getInput()[0].getAmount() > 1) {
+            this.getAddon().getJavaPlugin().getServer().getLogger().info("Register recipe for " + this.getItemName() + " has occurred a error: " + " input item amount should be one");
+            recipe.getInput()[0] = new CustomItemStack(recipe.getInput()[0], 1);
+        }
+
+        RecipeItem.super.registerRecipe(recipe);
     }
 }

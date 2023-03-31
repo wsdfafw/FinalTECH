@@ -19,6 +19,7 @@ import javax.annotation.Nonnull;
  * A machine which will need player input something
  * then it will output something
  * @author Final_ROOT
+ * @since 1.0
  */
 public abstract class AbstractOperationMachine extends AbstractMachine implements MachineProcessHolder<MachineOperation>, RecipeItem {
     private final MachineProcessor<MachineOperation> processor;

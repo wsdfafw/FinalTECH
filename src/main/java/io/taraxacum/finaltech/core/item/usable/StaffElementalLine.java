@@ -33,18 +33,16 @@ public class StaffElementalLine extends UsableSlimefunItem implements RecipeItem
     private final double shortRange = ConfigUtil.getOrDefaultItemSetting(4, this, "short-range");
     private final double longRange = ConfigUtil.getOrDefaultItemSetting(16, this, "long-range");
 
+    private final int interval = ConfigUtil.getOrDefaultItemSetting(500, this, "interval");
+    private final int threshold = ConfigUtil.getOrDefaultItemSetting(2, this, "threshold");
+
     public StaffElementalLine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
     }
 
-    /**
-     * The function the item will do
-     * while a player hold the item and right click.
-     *
-     * @param playerRightClickEvent
-     */
     @Override
     protected void function(@Nonnull PlayerRightClickEvent playerRightClickEvent) {
+        playerRightClickEvent.cancel();
         Player player = playerRightClickEvent.getPlayer();
         Location playerLocation = player.getEyeLocation();
         Location targetLocation = player.getLocation();
@@ -92,16 +90,18 @@ public class StaffElementalLine extends UsableSlimefunItem implements RecipeItem
             if (!targetLocation.getWorld().getBlockAt(new Location(targetLocation.getWorld(), targetLocation.getBlockX() + 0.5, targetLocation.getBlockY() + 0.5, targetLocation.getBlockZ() + 0.5)).getType().isAir()) {
                 targetLocation.setY(Math.ceil(targetLocation.getY() + 0.1));
             }
+            boolean sprinting = player.isSprinting();
             Vector velocity = player.getVelocity().clone();
             player.teleport(targetLocation, PlayerTeleportEvent.TeleportCause.PLUGIN);
             player.setVelocity(velocity);
+            player.setSprinting(sprinting);
         }
         targetLocation.setY(targetLocation.getY() + player.getEyeHeight());
 
         final Location finalTargetLocation = targetLocation;
 
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-        javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(this.getAddon().getJavaPlugin(), Particle.GLOW, 0, 0.1, playerLocation, finalTargetLocation));
+        javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(this.getAddon().getJavaPlugin(), Particle.WAX_OFF, 0, 0.1, playerLocation, finalTargetLocation));
     }
 
     @Override
@@ -109,5 +109,15 @@ public class StaffElementalLine extends UsableSlimefunItem implements RecipeItem
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
                 String.valueOf(this.shortRange),
                 String.valueOf(this.longRange));
+    }
+
+    @Override
+    int getThreshold() {
+        return this.threshold;
+    }
+
+    @Override
+    int getInterval() {
+        return this.interval;
     }
 }

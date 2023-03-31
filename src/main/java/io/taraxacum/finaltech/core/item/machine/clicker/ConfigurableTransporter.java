@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
  * @since 2.2
  */
 public class ConfigurableTransporter extends AbstractClickerMachine implements RecipeItem {
-    public static final int RANGE = ConfigUtil.getOrDefaultItemSetting(16, SfItemUtil.getIdFormatName(Transporter.class), "range");
+    private final int range = ConfigUtil.getOrDefaultItemSetting(16, this, "range");
 
     public ConfigurableTransporter(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -28,12 +28,12 @@ public class ConfigurableTransporter extends AbstractClickerMachine implements R
     @Nonnull
     @Override
     protected AbstractMachineMenu setMachineMenu() {
-        return new ConfigurableTransporterMenu(this);
+        return new ConfigurableTransporterMenu(this, this.range);
     }
 
     @Override
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
-                String.valueOf(RANGE));
+                String.valueOf(this.range));
     }
 }

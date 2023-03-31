@@ -1,11 +1,11 @@
 package io.taraxacum.finaltech.core.helper;
 
+import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.finaltech.core.item.unusable.module.AbstractQuantityModule;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -34,44 +34,45 @@ public class Icon {
 
     public static final ItemStack ERROR_ICON = new CustomItemStack(Material.BARRIER, FinalTech.getLanguageString("helper", "ICON", "error", "name"), FinalTech.getLanguageStringArray("helper", "ICON", "error", "lore"));
 
-    public static final ItemStack WIKI_ICON = new CustomItemStack(Material.KNOWLEDGE_BOOK, FinalTech.getLanguageString("helper", "ICON", "wiki-icon", "name"));
+    public static final ItemStack WIKI_ICON = new CustomItemStack(Material.KNOWLEDGE_BOOK, FinalTech.getLanguageString("helper", "ICON", "wiki-icon", "name"), FinalTech.getLanguageStringArray("helper", "ICON", "wiki-icon", "lore"));
 
-    public static final ItemStack RECIPE_ICON = new CustomItemStack(Material.PAPER, FinalTech.getLanguageString("helper", "ICON", "recipe-icon", "name"));
+    public static final ItemStack RECIPE_ICON = new CustomItemStack(Material.PAPER, FinalTech.getLanguageString("helper", "ICON", "recipe-icon", "name"), FinalTech.getLanguageStringArray("helper", "ICON", "recipe-icon", "lore"));
+
+    public static final ItemStack CONSUMER_ICON = new CustomItemStack(Material.FURNACE, FinalTech.getLanguageString("helper", "ICON", "consumer", "name"), FinalTech.getLanguageStringArray("helper", "ICON", "consumer", "lore"));
+
+    public static final ItemStack GENERATOR_ICON = new CustomItemStack(Material.DAYLIGHT_DETECTOR, FinalTech.getLanguageString("helper", "ICON", "generator", "name"), FinalTech.getLanguageStringArray("helper", "ICON", "generator", "lore"));
+
+    public static final ItemStack CAPACITOR_ICON = new CustomItemStack(Material.YELLOW_STAINED_GLASS, FinalTech.getLanguageString("helper", "ICON", "capacitor", "name"), FinalTech.getLanguageStringArray("helper", "ICON", "capacitor", "lore"));
 
     public static int updateQuantityModule(@Nonnull BlockMenu blockMenu, int quantityModuleSlot, int statusSlot) {
         boolean updateLore = blockMenu.hasViewer();
-        ItemStack item = blockMenu.getItemInSlot(quantityModuleSlot);
+
         int amount;
-        List<String> lores = null;
-        if (ItemStackUtil.isItemSimilar(item, FinalTechItems.QUANTITY_MODULE)) {
-            amount = item.getAmount();
-            if (updateLore) {
-                lores = FinalTech.getLanguageManager().replaceStringList(FinalTech.getLanguageStringList("helper", "ICON", "quantity-module", "amount-lore"),
-                        String.valueOf(amount));
-            }
-        } else if (ItemStackUtil.isItemSimilar(item, FinalTechItems.QUANTITY_MODULE_INFINITY)) {
-            amount = Integer.MAX_VALUE / ConstantTableUtil.ITEM_MAX_STACK - 1;
-            if (updateLore) {
-                lores = FinalTech.getLanguageManager().replaceStringList(FinalTech.getLanguageStringList("helper", "ICON", "quantity-module", "amount-lore"),
-                        FinalTech.getLanguageString("helper", "ICON", "quantity-module", "amount-infinity"));
+
+        ItemStack itemStack = blockMenu.getItemInSlot(quantityModuleSlot);
+        SlimefunItem slimefunItem = SlimefunItem.getByItem(itemStack);
+        if(slimefunItem instanceof AbstractQuantityModule quantityModule) {
+            amount = quantityModule.getEffect(itemStack.getAmount());
+            if(updateLore) {
+                List<String> loreList = new ArrayList<>(FinalTech.getLanguageStringList("helper", "ICON", "quantity-module", "lore"));
+                if(amount >= 3456) {
+                    loreList.addAll(FinalTech.getLanguageManager().replaceStringList(FinalTech.getLanguageStringList("helper", "ICON", "quantity-module", "amount-lore"),
+                            FinalTech.getLanguageString("helper", "ICON", "quantity-module", "amount-infinity")));
+                } else {
+                    loreList.addAll(FinalTech.getLanguageManager().replaceStringList(FinalTech.getLanguageStringList("helper", "ICON", "quantity-module", "amount-lore"),
+                            String.valueOf(amount)));
+                }
+                ItemStackUtil.setLore(blockMenu.getItemInSlot(statusSlot), loreList);
             }
         } else {
             amount = 1;
-            if (updateLore) {
-                lores = FinalTech.getLanguageManager().replaceStringList(FinalTech.getLanguageStringList("helper", "ICON", "quantity-module", "amount-none-lore"),
-                        "1");
+            if(updateLore) {
+                List<String> loreList = new ArrayList<>(FinalTech.getLanguageStringList("helper", "ICON", "quantity-module", "lore"));
+                loreList.addAll(FinalTech.getLanguageManager().replaceStringList(FinalTech.getLanguageStringList("helper", "ICON", "quantity-module", "amount-none-lore"),
+                        "1"));
+                ItemStackUtil.setLore(blockMenu.getItemInSlot(statusSlot), loreList);
             }
         }
-
-        if (!updateLore) {
-            return amount;
-        }
-
-        List<String> loreList = new ArrayList<>(FinalTech.getLanguageStringList("helper", "ICON", "quantity-module", "lore"));
-        loreList.addAll(lores);
-
-        ItemStack infoItem = blockMenu.getItemInSlot(statusSlot);
-        ItemStackUtil.setLore(infoItem, loreList);
 
         return amount;
     }

@@ -11,12 +11,13 @@ import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This machine will do function while being clicked by player.
@@ -24,8 +25,8 @@ import javax.annotation.Nonnull;
  * @since 2.2
  */
 public abstract class AbstractClickerMachine extends AbstractMachine {
-    public static final String KEY = "times";
-    public static final String THRESHOLD = ConfigUtil.getOrDefaultItemSetting(String.valueOf(Slimefun.getTickerTask().getTickRate() / 2), "CLICKER", "threshold");
+    private final Map<Location, Integer> locationCountMap = new HashMap<>();
+    private final int countThreshold = ConfigUtil.getOrDefaultItemSetting(Slimefun.getTickerTask().getTickRate() / 2, this, "count-threshold");
 
     public AbstractClickerMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -34,13 +35,7 @@ public abstract class AbstractClickerMachine extends AbstractMachine {
     @Nonnull
     @Override
     protected BlockPlaceHandler onBlockPlace() {
-        return new BlockPlaceHandler(false) {
-            @Override
-            public void onPlayerPlace(@Nonnull BlockPlaceEvent e) {
-                Block block = e.getBlock();
-                BlockStorage.addBlockInfo(block, KEY, THRESHOLD);
-            }
-        };
+        return MachineUtil.BLOCK_PLACE_HANDLER_PLACER_DENY;
     }
 
     @Nonnull
@@ -51,11 +46,26 @@ public abstract class AbstractClickerMachine extends AbstractMachine {
 
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        config.setValue(KEY, THRESHOLD);
+
     }
 
     @Override
     protected boolean isSynchronized() {
         return false;
+    }
+
+    @Override
+    protected void uniqueTick() {
+        super.uniqueTick();
+
+        this.locationCountMap.clear();
+    }
+
+    public Map<Location, Integer> getLocationCountMap() {
+        return locationCountMap;
+    }
+
+    public int getCountThreshold() {
+        return countThreshold;
     }
 }

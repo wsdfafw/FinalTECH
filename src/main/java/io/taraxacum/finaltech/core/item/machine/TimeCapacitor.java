@@ -26,6 +26,10 @@ import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 
+/**
+ * @author Final_ROOT
+ * @since 2.2
+ */
 public class TimeCapacitor extends AbstractMachine implements EnergyNetComponent, RecipeItem, MenuUpdater {
     private final String key = "time";
     private final int interval = ConfigUtil.getOrDefaultItemSetting(1600, this, "interval");
@@ -61,15 +65,11 @@ public class TimeCapacitor extends AbstractMachine implements EnergyNetComponent
 
         if(world != null) {
             long time = world.getTime() / this.interval;
-            if(config.contains(this.key)) {
-                String oldTime = config.getString(this.key);
-                if(!oldTime.equals(String.valueOf(time))) {
-                    charge *= 2;
-                    config.setValue(this.key, String.valueOf(time));
-                }
-            } else {
-                config.setValue(this.key, String.valueOf(time));
+            String oldTime = config.getString(this.key);
+            if(oldTime != null && !oldTime.equals(String.valueOf(time))) {
+                charge *= 2;
             }
+            config.setValue(this.key, String.valueOf(time));
         }
 
         charge = charge > this.capacity ? 0 : charge;

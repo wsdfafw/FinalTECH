@@ -3,17 +3,13 @@ package io.taraxacum.finaltech.util;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
-import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
-import io.taraxacum.common.util.JavaUtil;
-import io.taraxacum.common.util.ReflectionUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.helper.IgnorePermission;
-import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
+import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.libs.plugin.dto.ConfigFileManager;
+import io.taraxacum.libs.slimefun.dto.LocationInfo;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -23,12 +19,13 @@ import org.bukkit.persistence.PersistentDataType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 
+/**
+ * @author Final_ROOT
+ * @since 2.0
+ */
 public class ItemConfigurationUtil {
     private static boolean init = false;
     private static Set<String> allowedItemId = new HashSet<>();
@@ -53,10 +50,10 @@ public class ItemConfigurationUtil {
         Map<String, Set<String>> groupItemMap = new HashMap<>();
 
         ConfigFileManager itemManager = FinalTech.getItemManager();
-        List<String> groupList = itemManager.getStringList("MACHINE_CONFIGURATOR", "item-config");
+        List<String> groupList = itemManager.getStringList(FinalTechItems.MACHINE_CONFIGURATOR.getId(), "item-config");
 
         for(String group : groupList) {
-            List<String> itemIdList = itemManager.getStringList("MACHINE_CONFIGURATOR", "item-config", group);
+            List<String> itemIdList = itemManager.getStringList(FinalTechItems.MACHINE_CONFIGURATOR.getId(), "item-config", group);
 
             for(String itemId : itemIdList) {
                 allowedItemId.add(itemId);
@@ -70,7 +67,7 @@ public class ItemConfigurationUtil {
                     groupItemMap.put(group, itemIdSet);
                 }
 
-                List<String> keyList = itemManager.getStringList("MACHINE_CONFIGURATOR", "item-config", group, itemId);
+                List<String> keyList = itemManager.getStringList(FinalTechItems.MACHINE_CONFIGURATOR.getId(), "item-config", group, itemId);
                 Set<String> keySet = new HashSet<>(keyList);
 
                 keySet.add(ConstantTableUtil.CONFIG_ID);
@@ -166,14 +163,35 @@ public class ItemConfigurationUtil {
         return true;
     }
 
+    public static boolean saveConfigToItem(@Nonnull ItemStack itemStack, @Nonnull LocationInfo locationInfo) {
+        if(!ItemConfigurationUtil.allowedItemId.contains(locationInfo.getId())) {
+            return false;
+        }
+
+        Map<String, String> configMap = new HashMap<>();
+        for (String key : locationInfo.getConfig().getKeys()) {
+            configMap.put(key, locationInfo.getConfig().getString(key));
+        }
+
+        configMap = ItemConfigurationUtil.filterByItem(locationInfo.getId(), configMap);
+
+        ItemConfigurationUtil.setConfigurationToItem(itemStack, configMap);
+
+        ItemConfigurationUtil.setIdToItem(itemStack, locationInfo.getId());
+
+        return true;
+    }
+
     public static boolean loadConfigFromItem(@Nonnull ItemStack itemStack, @Nonnull Location location) {
-        Config config = BlockStorage.getLocationInfo(location);
-        String existedItemId = config.getString(ConstantTableUtil.CONFIG_ID);
+        LocationInfo locationInfo = LocationInfo.get(location);
 
         ItemMeta itemMeta = itemStack.getItemMeta();
+        if(itemMeta == null) {
+            return false;
+        }
         String itemId = ItemConfigurationUtil.getIdFromItem(itemMeta);
 
-        if(!ItemConfigurationUtil.isSameGroup(itemId, existedItemId)) {
+        if(locationInfo == null || itemId == null || !ItemConfigurationUtil.isSameGroup(itemId, locationInfo.getId())) {
             return false;
         }
 
@@ -181,8 +199,28 @@ public class ItemConfigurationUtil {
         configMap = ItemConfigurationUtil.filterByItem(itemId, configMap);
 
         for (Map.Entry<String, String> entry : configMap.entrySet()) {
-            if(config.contains(entry.getKey())) {
+            if(locationInfo.getConfig().contains(entry.getKey())) {
                 BlockStorage.addBlockInfo(location, entry.getKey(), entry.getValue());
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean loadConfigFromItem(@Nonnull ItemStack itemStack, @Nonnull LocationInfo locationInfo) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        String itemId = ItemConfigurationUtil.getIdFromItem(itemMeta);
+
+        if(!ItemConfigurationUtil.isSameGroup(itemId, locationInfo.getId())) {
+            return false;
+        }
+
+        Map<String, String> configMap = ItemConfigurationUtil.getConfigurationFromItem(itemMeta);
+        configMap = ItemConfigurationUtil.filterByItem(itemId, configMap);
+
+        for (Map.Entry<String, String> entry : configMap.entrySet()) {
+            if(locationInfo.getConfig().contains(entry.getKey())) {
+                BlockStorage.addBlockInfo(locationInfo.getLocation(), entry.getKey(), entry.getValue());
             }
         }
 
@@ -252,47 +290,5 @@ public class ItemConfigurationUtil {
     public static void setConfigurationToItem(@Nonnull ItemMeta itemMeta, @Nonnull Map<String, String> map) {
         PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
         persistentDataContainer.set(KEY_CONFIG, PersistentDataType.STRING, GSON.toJson(map));
-    }
-
-
-    public static void extraSaveFunction(@Nonnull BlockMenu blockMenu, @Nonnull String id) {
-        SlimefunItem slimefunItem = SlimefunItem.getById(id);
-
-        // Slimefun cargo node
-        if(JavaUtil.matchOnce(id, SlimefunItems.CARGO_INPUT_NODE.getItemId(), SlimefunItems.CARGO_OUTPUT_NODE.getItemId(), SlimefunItems.CARGO_OUTPUT_NODE_2.getItemId())) {
-            Method method = ReflectionUtil.getMethod(slimefunItem.getClass(), "updateBlockMenu");
-            if(method != null) {
-                try {
-                    method.setAccessible(true);
-                    method.invoke(slimefunItem, blockMenu, blockMenu.getBlock());
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        // FinalTECH machines
-        if(slimefunItem.getAddon().getJavaPlugin().equals(FinalTech.getInstance())) {
-            if(slimefunItem instanceof AbstractMachine) {
-                try {
-                    Field field = ReflectionUtil.getField(slimefunItem.getClass(), "menu");
-                    if(field != null) {
-                        field.setAccessible(true);
-                        Object menu = field.get(slimefunItem);
-                        if(menu != null) {
-                            Method method = ReflectionUtil.getMethod(menu.getClass(), "updateInventory");
-                            if(method != null) {
-                                method.setAccessible(true);
-                                method.invoke(menu, blockMenu.toInventory(), blockMenu.getLocation());
-                            }
-                        }
-                    }
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        // TODO: other slimefun addons ?
     }
 }

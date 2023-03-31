@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
  * @since 2.2
  */
 public class ExpandedConsumableRemoteAccessor extends AbstractClickerMachine implements RecipeItem {
-    public static final int RANGE = ConfigUtil.getOrDefaultItemSetting(16, SfItemUtil.getIdFormatName(RemoteAccessor.class), "range");
+    private final int range = ConfigUtil.getOrDefaultItemSetting(16, this, "range");
 
     public ExpandedConsumableRemoteAccessor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -28,12 +28,12 @@ public class ExpandedConsumableRemoteAccessor extends AbstractClickerMachine imp
     @Nonnull
     @Override
     protected AbstractMachineMenu setMachineMenu() {
-        return new ExpandedConsumableRemoteAccessorMenu(this);
+        return new ExpandedConsumableRemoteAccessorMenu(this, this.range);
     }
 
     @Override
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
-                String.valueOf(RANGE));
+                String.valueOf(this.range));
     }
 }

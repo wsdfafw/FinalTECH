@@ -2,8 +2,8 @@ package io.taraxacum.finaltech.core.menu.clicker;
 
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.taraxacum.finaltech.core.interfaces.DigitalItem;
-import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
-import io.taraxacum.finaltech.core.item.machine.clicker.RemoteAccessor;
+import io.taraxacum.finaltech.core.item.machine.clicker.AbstractClickerMachine;
+import io.taraxacum.finaltech.util.LocationUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
@@ -27,15 +27,18 @@ import java.util.List;
  * @author Final_ROOT
  * @since 2.0
  */
-public class ConfigurableRemoteAccessorMenu extends AbstractAccessorMenu {
+public class ConfigurableRemoteAccessorMenu extends AbstractClickerMenu {
     private static final int[] BORDER = new int[] {0, 1, 2, 3, 5, 6, 7, 8};
     private static final int[] INPUT_BORDER = new int[0];
     private static final int[] OUTPUT_BORDER = new int[0];
     private static final int[] INPUT_SLOT = new int[] {4};
     private static final int[] OUTPUT_SLOT = new int[] {4};
 
-    public ConfigurableRemoteAccessorMenu(@Nonnull AbstractMachine machine) {
-        super(machine);
+    private final int range;
+
+    public ConfigurableRemoteAccessorMenu(@Nonnull AbstractClickerMachine slimefunItem, int range) {
+        super(slimefunItem);
+        this.range = range;
     }
 
     @Override
@@ -50,7 +53,6 @@ public class ConfigurableRemoteAccessorMenu extends AbstractAccessorMenu {
                 int digit = digitalItem.getDigit();
 
                 BlockData blockData = block.getState().getBlockData();
-                List<Block> blockList = new ArrayList<>();
                 if (blockData instanceof Directional) {
                     BlockFace blockFace = ((Directional) blockData).getFacing();
                     Block targetBlock = block;
@@ -59,25 +61,27 @@ public class ConfigurableRemoteAccessorMenu extends AbstractAccessorMenu {
                         for(int i = 0; i < digit; i++) {
                             targetBlock = targetBlock.getRelative(blockFace);
                         }
-                        blockList.add(targetBlock);
 
                         if(BlockStorage.hasInventory(targetBlock)) {
                             BlockMenu targetBlockMenu = BlockStorage.getInventory(targetBlock);
                             if(targetBlockMenu.canOpen(targetBlock, player)) {
                                 JavaPlugin javaPlugin = this.getSlimefunItem().getAddon().getJavaPlugin();
-                                javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.COMPOSTER, 0, blockList));
+                                Block finalTargetBlock = targetBlock;
+                                javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, finalTargetBlock));
+                                javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(javaPlugin, Particle.WAX_OFF, 0, 0.25, LocationUtil.getCenterLocation(block), LocationUtil.getCenterLocation(finalTargetBlock)));
                                 targetBlockMenu.open(player);
                             }
                         }
                     } else if(digit == 0) {
-                        for (int i = 0; i < RemoteAccessor.RANGE; i++) {
+                        for (int i = 0; i < this.range; i++) {
                             targetBlock = targetBlock.getRelative(blockFace);
-                            blockList.add(targetBlock);
                             if (BlockStorage.hasInventory(targetBlock)) {
                                 BlockMenu targetBlockMenu = BlockStorage.getInventory(targetBlock);
                                 if (targetBlockMenu.canOpen(targetBlock, player)) {
                                     JavaPlugin javaPlugin = this.getSlimefunItem().getAddon().getJavaPlugin();
-                                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.COMPOSTER, 0, blockList));
+                                    Block finalTargetBlock = targetBlock;
+                                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, finalTargetBlock));
+                                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(javaPlugin, Particle.WAX_OFF, 0, 0.25, LocationUtil.getCenterLocation(block), LocationUtil.getCenterLocation(finalTargetBlock)));
                                     targetBlockMenu.open(player);
                                     break;
                                 }
@@ -90,7 +94,7 @@ public class ConfigurableRemoteAccessorMenu extends AbstractAccessorMenu {
         }
 
         JavaPlugin javaPlugin = this.getSlimefunItem().getAddon().getJavaPlugin();
-        javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.COMPOSTER, 0, block));
+        javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
     }
 
     @Override

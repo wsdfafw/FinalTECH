@@ -6,11 +6,13 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
+import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.helper.Icon;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.cargo.AdvancedAutoCraftFrameMenu;
 import io.taraxacum.finaltech.util.MachineUtil;
+import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
@@ -26,6 +28,8 @@ import javax.annotation.Nonnull;
  * @since 2.0
  */
 public class AdvancedAutoCraftFrame extends AbstractMachine implements RecipeItem {
+    private AdvancedAutoCraftFrameMenu advancedAutoCraftFrameMenu = null;
+
     public AdvancedAutoCraftFrame(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
     }
@@ -45,7 +49,8 @@ public class AdvancedAutoCraftFrame extends AbstractMachine implements RecipeIte
     @Nonnull
     @Override
     protected AbstractMachineMenu setMachineMenu() {
-        return new AdvancedAutoCraftFrameMenu(this);
+        this.advancedAutoCraftFrameMenu = new AdvancedAutoCraftFrameMenu(this);
+        return this.advancedAutoCraftFrameMenu;
     }
 
     @Override
@@ -65,13 +70,17 @@ public class AdvancedAutoCraftFrame extends AbstractMachine implements RecipeIte
 
     @Override
     public void registerDefaultRecipes() {
-        AdvancedAutoCraftFrameMenu.registerRecipe();
-        for (String id : AdvancedAutoCraftFrameMenu.RECIPE_MAP.keySet()) {
-            SlimefunItem slimefunItem = SlimefunItem.getById(id);
-            if (slimefunItem != null) {
-                ItemStack itemStack = slimefunItem.getItem();
-                if (!ItemStackUtil.isItemNull(itemStack)) {
-                    this.registerDescriptiveRecipe(itemStack);
+        RecipeUtil.registerDescriptiveRecipeWithBorder(FinalTech.getLanguageManager(), this);
+
+        if(this.advancedAutoCraftFrameMenu != null) {
+            this.advancedAutoCraftFrameMenu.registerRecipe();
+            for (String id : this.advancedAutoCraftFrameMenu.getRecipeMap().keySet()) {
+                SlimefunItem slimefunItem = SlimefunItem.getById(id);
+                if (slimefunItem != null) {
+                    ItemStack itemStack = slimefunItem.getItem();
+                    if (!ItemStackUtil.isItemNull(itemStack)) {
+                        this.registerDescriptiveRecipe(itemStack);
+                    }
                 }
             }
         }

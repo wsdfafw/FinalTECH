@@ -9,7 +9,7 @@ import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.libs.plugin.dto.ConfigFileManager;
 import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
-import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
 import org.bukkit.inventory.ItemStack;
@@ -48,15 +48,15 @@ public class ItemValueTable {
 
         ConfigFileManager valueFile = FinalTech.getValueManager();
 
-        this.itemInputValueMap.put(SlimefunItems.IRON_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, "2"));
-        this.itemInputValueMap.put(SlimefunItems.GOLD_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, "2"));
-        this.itemInputValueMap.put(SlimefunItems.COPPER_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, "2"));
-        this.itemInputValueMap.put(SlimefunItems.TIN_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, "2"));
-        this.itemInputValueMap.put(SlimefunItems.LEAD_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, "2"));
-        this.itemInputValueMap.put(SlimefunItems.SILVER_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, "2"));
-        this.itemInputValueMap.put(SlimefunItems.ALUMINUM_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, "2"));
-        this.itemInputValueMap.put(SlimefunItems.ZINC_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, "2"));
-        this.itemInputValueMap.put(SlimefunItems.MAGNESIUM_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, "2"));
+        this.itemInputValueMap.put(SlimefunItems.IRON_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, StringNumberUtil.ZERO));
+        this.itemInputValueMap.put(SlimefunItems.GOLD_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, StringNumberUtil.ZERO));
+        this.itemInputValueMap.put(SlimefunItems.COPPER_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, StringNumberUtil.ZERO));
+        this.itemInputValueMap.put(SlimefunItems.TIN_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, StringNumberUtil.ZERO));
+        this.itemInputValueMap.put(SlimefunItems.LEAD_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, StringNumberUtil.ZERO));
+        this.itemInputValueMap.put(SlimefunItems.SILVER_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, StringNumberUtil.ZERO));
+        this.itemInputValueMap.put(SlimefunItems.ALUMINUM_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, StringNumberUtil.ZERO));
+        this.itemInputValueMap.put(SlimefunItems.ZINC_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, StringNumberUtil.ZERO));
+        this.itemInputValueMap.put(SlimefunItems.MAGNESIUM_DUST.getItemId(), StringNumberUtil.mul(this.baseInputValue, StringNumberUtil.ZERO));
 
         this.itemOutputValueMap.put(SlimefunItems.IRON_DUST.getItemId(), StringNumberUtil.mul(this.baseOutputValue, "16"));
         this.itemOutputValueMap.put(SlimefunItems.GOLD_DUST.getItemId(), StringNumberUtil.mul(this.baseOutputValue, "16"));
@@ -83,11 +83,11 @@ public class ItemValueTable {
             }
         }
 
-        this.manualInitId(FinalTechItems.COPY_CARD.getItemId(), String.valueOf(ConstantTableUtil.ITEM_COPY_CARD_AMOUNT), StringNumberUtil.mul(String.valueOf(ConstantTableUtil.ITEM_COPY_CARD_AMOUNT), String.valueOf(ConstantTableUtil.ITEM_COPY_CARD_AMOUNT)), false);
-        this.manualInitId(FinalTechItems.SINGULARITY.getItemId(), StringNumberUtil.mul(String.valueOf(ConstantTableUtil.ITEM_SINGULARITY_AMOUNT), this.getOrCalItemInputValue(FinalTechItems.COPY_CARD)), StringNumberUtil.mul(String.valueOf(ConstantTableUtil.ITEM_SINGULARITY_AMOUNT), this.getOrCalItemOutputValue(FinalTechItems.COPY_CARD)), false);
-        this.manualInitId(FinalTechItems.SPIROCHETE.getItemId(), StringNumberUtil.mul(String.valueOf(ConstantTableUtil.ITEM_SPIROCHETE_AMOUNT * ConstantTableUtil.ITEM_SPIROCHETE_AMOUNT), this.getOrCalItemInputValue(FinalTechItems.COPY_CARD)), StringNumberUtil.mul(String.valueOf(ConstantTableUtil.ITEM_SPIROCHETE_AMOUNT * ConstantTableUtil.ITEM_SPIROCHETE_AMOUNT), this.getOrCalItemOutputValue(FinalTechItems.COPY_CARD)), false);
-        this.manualInitId(FinalTechItems.PHONY.getItemId(), StringNumberUtil.add(this.getOrCalItemInputValue(FinalTechItems.SINGULARITY), this.getOrCalItemInputValue(FinalTechItems.SPIROCHETE)), StringNumberUtil.mul(this.getOrCalItemOutputValue(FinalTechItems.SINGULARITY), this.getOrCalItemOutputValue(FinalTechItems.SPIROCHETE)), false);
-        this.manualInitId(FinalTechItems.BUG.getItemId(), StringNumberUtil.ZERO, StringNumberUtil.ZERO, true);
+        this.manualInitId(FinalTechItemStacks.COPY_CARD.getItemId(), String.valueOf(ConstantTableUtil.ITEM_COPY_CARD_AMOUNT), StringNumberUtil.mul(String.valueOf(ConstantTableUtil.ITEM_COPY_CARD_AMOUNT), String.valueOf(ConstantTableUtil.ITEM_COPY_CARD_AMOUNT)), false);
+        this.manualInitId(FinalTechItemStacks.SINGULARITY.getItemId(), StringNumberUtil.mul(String.valueOf(ConstantTableUtil.ITEM_SINGULARITY_AMOUNT), this.getOrCalItemInputValue(FinalTechItemStacks.COPY_CARD)), StringNumberUtil.mul(String.valueOf(ConstantTableUtil.ITEM_SINGULARITY_AMOUNT), this.getOrCalItemOutputValue(FinalTechItemStacks.COPY_CARD)), false);
+        this.manualInitId(FinalTechItemStacks.SPIROCHETE.getItemId(), StringNumberUtil.mul(String.valueOf(ConstantTableUtil.ITEM_SPIROCHETE_AMOUNT * ConstantTableUtil.ITEM_SPIROCHETE_AMOUNT), this.getOrCalItemInputValue(FinalTechItemStacks.COPY_CARD)), StringNumberUtil.mul(String.valueOf(ConstantTableUtil.ITEM_SPIROCHETE_AMOUNT * ConstantTableUtil.ITEM_SPIROCHETE_AMOUNT), this.getOrCalItemOutputValue(FinalTechItemStacks.COPY_CARD)), false);
+        this.manualInitId(FinalTechItemStacks.PHONY.getItemId(), StringNumberUtil.add(this.getOrCalItemInputValue(FinalTechItemStacks.SINGULARITY), this.getOrCalItemInputValue(FinalTechItemStacks.SPIROCHETE)), StringNumberUtil.mul(this.getOrCalItemOutputValue(FinalTechItemStacks.SINGULARITY), this.getOrCalItemOutputValue(FinalTechItemStacks.SPIROCHETE)), false);
+        this.manualInitId(FinalTechItemStacks.BUG.getItemId(), StringNumberUtil.ZERO, StringNumberUtil.ZERO, true);
 
         List<SlimefunItem> allSlimefunItems = Slimefun.getRegistry().getAllSlimefunItems();
         for (SlimefunItem slimefunItem : allSlimefunItems) {

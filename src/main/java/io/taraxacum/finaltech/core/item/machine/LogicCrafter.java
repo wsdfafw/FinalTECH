@@ -6,12 +6,14 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
+import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.interfaces.LogicItem;
-import io.taraxacum.finaltech.core.item.unusable.digital.AbstractDigitalNumber;
+import io.taraxacum.finaltech.core.item.unusable.DigitalNumber;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.LogicCrafterMenu;
-import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
+import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
@@ -23,6 +25,10 @@ import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 
+/**
+ * @author Final_ROOT
+ * @since 2.0
+ */
 public class LogicCrafter extends AbstractMachine implements RecipeItem {
     public LogicCrafter(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -55,11 +61,11 @@ public class LogicCrafter extends AbstractMachine implements RecipeItem {
             return;
         }
         for (int slot : this.getInputSlot()) {
-            ItemStack item = inventory.getItem(slot);
-            if (ItemStackUtil.isItemNull(item)) {
+            ItemStack itemStack = inventory.getItem(slot);
+            if (ItemStackUtil.isItemNull(itemStack)) {
                 return;
             }
-            SlimefunItem logicItem = SlimefunItem.getByItem(item);
+            SlimefunItem logicItem = SlimefunItem.getByItem(itemStack);
             if (logicItem instanceof LogicItem) {
                 boolean logic = ((LogicItem) logicItem).getLogic();
                 digit = digit << 1;
@@ -68,7 +74,7 @@ public class LogicCrafter extends AbstractMachine implements RecipeItem {
                 return;
             }
         }
-        ItemStack result = AbstractDigitalNumber.INTEGER_ITEM_STACK_MAP.get(digit);
+        SlimefunItem result = DigitalNumber.getByDigit(digit);
         if (result != null) {
             for (int slot : this.getInputSlot()) {
                 ItemStack itemStack = inventory.getItem(slot);
@@ -77,7 +83,7 @@ public class LogicCrafter extends AbstractMachine implements RecipeItem {
                 }
                 itemStack.setAmount(itemStack.getAmount() - 1);
             }
-            inventory.setItem(this.getOutputSlot()[0], result);
+            inventory.setItem(this.getOutputSlot()[0], result.getItem());
         }
     }
 
@@ -88,7 +94,9 @@ public class LogicCrafter extends AbstractMachine implements RecipeItem {
 
     @Override
     public void registerDefaultRecipes() {
-        this.registerRecipe(FinalTechItems.LOGIC_TRUE, ItemStackUtil.AIR);
-        this.registerRecipe(FinalTechItems.LOGIC_FALSE, ItemStackUtil.AIR);
+        RecipeUtil.registerDescriptiveRecipeWithBorder(FinalTech.getLanguageManager(), this);
+
+        this.registerRecipe(FinalTechItemStacks.LOGIC_TRUE, ItemStackUtil.AIR);
+        this.registerRecipe(FinalTechItemStacks.LOGIC_FALSE, ItemStackUtil.AIR);
     }
 }

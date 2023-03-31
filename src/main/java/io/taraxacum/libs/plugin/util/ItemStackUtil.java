@@ -61,6 +61,9 @@ public final class ItemStackUtil {
      * @return Whether item1 is similar to item2
      */
     public static boolean isItemSimilar(@Nullable ItemStack item1, @Nullable ItemStack item2) {
+        if(item1 == item2) {
+            return true;
+        }
         boolean itemNull1 = ItemStackUtil.isItemNull(item1);
         boolean itemNull2 = ItemStackUtil.isItemNull(item2);
         if (itemNull1 && itemNull2) {
@@ -77,6 +80,9 @@ public final class ItemStackUtil {
         return !item1.hasItemMeta() && !item2.hasItemMeta();
     }
     public static boolean isItemSimilar(@Nullable ItemStack item1, @Nonnull ItemWrapper item2) {
+        if(item1 == item2.getItemStack()) {
+            return true;
+        }
         if (ItemStackUtil.isItemNull(item1)) {
             return false;
         }
@@ -89,6 +95,9 @@ public final class ItemStackUtil {
         return !item1.hasItemMeta() && !item2.hasItemMeta();
     }
     public static boolean isItemSimilar(@Nonnull ItemWrapper item1, @Nullable ItemStack item2) {
+        if(item1.getItemStack() == item2) {
+            return true;
+        }
         if (ItemStackUtil.isItemNull(item2)) {
             return false;
         }
@@ -101,6 +110,9 @@ public final class ItemStackUtil {
         return !item1.hasItemMeta() && !item2.hasItemMeta();
     }
     public static boolean isItemSimilar(@Nonnull ItemWrapper item1, @Nonnull ItemWrapper item2) {
+        if(item1.getItemStack() == item2.getItemStack()) {
+            return true;
+        }
         if (!item1.getItemStack().getType().equals(item2.getItemStack().getType())) {
             return false;
         }
@@ -168,6 +180,9 @@ public final class ItemStackUtil {
     }
 
     public static boolean isEnchantmentSame(@Nonnull ItemStack itemStack1, @Nonnull ItemStack itemStack2) {
+        if(itemStack1 == itemStack2) {
+            return true;
+        }
         Map<Enchantment, Integer> enchantments1 = itemStack1.getEnchantments();
         Map<Enchantment, Integer> enchantments2 = itemStack2.getEnchantments();
         if (enchantments1.size() != enchantments2.size()) {
@@ -823,6 +838,31 @@ public final class ItemStackUtil {
         PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
         persistentDataContainer.set(namespacedKey, PersistentDataType.STRING, value);
         item.setItemMeta(itemMeta);
+    }
+
+    public static void clearNBT(@Nonnull ItemStack itemStack) {
+        if(!itemStack.hasItemMeta()) {
+            return;
+        }
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
+        for(NamespacedKey namespacedKey : persistentDataContainer.getKeys()) {
+            persistentDataContainer.remove(namespacedKey);
+        }
+        itemStack.setItemMeta(itemMeta);
+    }
+
+    @Nullable
+    public static ItemStack cloneWithoutNBT(@Nullable ItemStack itemStack) {
+        if(itemStack == null) {
+            return null;
+        }
+        if(!itemStack.hasItemMeta()) {
+            return new ItemStack(itemStack);
+        }
+        ItemStack result = new ItemStack(itemStack);
+        ItemStackUtil.clearNBT(result);
+        return result;
     }
 
     public static ItemStack getDried(@Nonnull ItemStack item) {

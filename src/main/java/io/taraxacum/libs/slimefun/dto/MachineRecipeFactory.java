@@ -13,8 +13,8 @@ import java.util.*;
  * @since 2.0
  */
 public class MachineRecipeFactory {
-    private final Map<Class<?>, List<MachineRecipe>> recipeMap = new HashMap<>();
-    private final Map<Class<?>, List<AdvancedMachineRecipe>> advancedRecipeMap = new HashMap<>();
+    private final Map<String, List<MachineRecipe>> recipeMap = new HashMap<>();
+    private final Map<String, List<AdvancedMachineRecipe>> advancedRecipeMap = new HashMap<>();
     private static volatile MachineRecipeFactory instance;
 
     private MachineRecipeFactory() {
@@ -22,28 +22,28 @@ public class MachineRecipeFactory {
     }
 
     @Nonnull
-    public List<MachineRecipe> getRecipe(@Nonnull Class<?> clazz) {
-        if (this.recipeMap.containsKey(clazz)) {
-            return this.recipeMap.get(clazz);
+    public List<MachineRecipe> getRecipe(@Nonnull String id) {
+        if (this.recipeMap.containsKey(id)) {
+            return this.recipeMap.get(id);
         }
         List<MachineRecipe> machineRecipeList = new ArrayList<>();
-        this.recipeMap.put(clazz, machineRecipeList);
+        this.recipeMap.put(id, machineRecipeList);
         return machineRecipeList;
     }
 
     @Nonnull
-    public List<AdvancedMachineRecipe> getAdvancedRecipe(@Nonnull Class<?> clazz) {
-        if (this.advancedRecipeMap.containsKey(clazz)) {
-            return this.advancedRecipeMap.get(clazz);
-        } else if (this.recipeMap.containsKey(clazz)) {
-            this.initAdvancedRecipeMap(clazz);
-            return this.advancedRecipeMap.get(clazz);
+    public List<AdvancedMachineRecipe> getAdvancedRecipe(@Nonnull String id) {
+        if (this.advancedRecipeMap.containsKey(id)) {
+            return this.advancedRecipeMap.get(id);
+        } else if (this.recipeMap.containsKey(id)) {
+            this.initAdvancedRecipeMap(id);
+            return this.advancedRecipeMap.get(id);
         }
         return new ArrayList<>();
     }
 
-    public void initAdvancedRecipeMap(@Nonnull Class<?> clazz) {
-        List<MachineRecipe> machineRecipeList = this.recipeMap.get(clazz);
+    public void initAdvancedRecipeMap(@Nonnull String id) {
+        List<MachineRecipe> machineRecipeList = this.recipeMap.get(id);
         if (machineRecipeList == null) {
             return;
         }
@@ -65,7 +65,7 @@ public class MachineRecipeFactory {
 
             advancedMachineRecipeList.add(new AdvancedMachineRecipe(inputItems, advancedRandomOutputs));
         }
-        this.advancedRecipeMap.put(clazz, advancedMachineRecipeList);
+        this.advancedRecipeMap.put(id, advancedMachineRecipeList);
     }
 
     @Nonnull

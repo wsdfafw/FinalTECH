@@ -11,7 +11,7 @@ import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.item.machine.range.point.EquivalentConcept;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
@@ -73,16 +73,18 @@ public class EntropySeed extends AbstractMachine implements RecipeItem {
 
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
+        // TODO optimization
+
         Location location = block.getLocation();
-        if (config.contains(this.key) && this.value.equals(config.getValue(this.key))) {
+        if (config.contains(this.key) && this.value.equals(config.getString(this.key))) {
             BlockStorage.addBlockInfo(location, this.key, null);
-            SlimefunItem sfItem = SlimefunItem.getByItem(FinalTechItems.EQUIVALENT_CONCEPT);
+            SlimefunItem sfItem = SlimefunItem.getByItem(FinalTechItemStacks.EQUIVALENT_CONCEPT);
             if (sfItem != null) {
                 BlockStorage.clearBlockInfo(location);
                 JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
                 javaPlugin.getServer().getScheduler().runTaskLaterAsynchronously(javaPlugin, () -> {
                     if (location.getBlock().getType().equals(EntropySeed.this.getItem().getType())) {
-                        BlockStorage.addBlockInfo(location, ConstantTableUtil.CONFIG_ID, FinalTechItems.EQUIVALENT_CONCEPT.getItemId(), true);
+                        BlockStorage.addBlockInfo(location, ConstantTableUtil.CONFIG_ID, FinalTechItemStacks.EQUIVALENT_CONCEPT.getItemId(), true);
                         BlockStorage.addBlockInfo(location, EquivalentConcept.KEY_LIFE, String.valueOf(EntropySeed.this.equivalentConceptLife));
                         BlockStorage.addBlockInfo(location, EquivalentConcept.KEY_RANGE, String.valueOf(EntropySeed.this.equivalentConceptRange));
                     }
@@ -93,7 +95,7 @@ public class EntropySeed extends AbstractMachine implements RecipeItem {
             JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
             javaPlugin.getServer().getScheduler().runTaskLaterAsynchronously(javaPlugin, () -> {
                 if (location.getBlock().getType().equals(EntropySeed.this.getItem().getType())) {
-                    BlockStorage.addBlockInfo(location, ConstantTableUtil.CONFIG_ID, FinalTechItems.JUSTIFIABILITY.getItemId(), true);
+                    BlockStorage.addBlockInfo(location, ConstantTableUtil.CONFIG_ID, FinalTechItemStacks.JUSTIFIABILITY.getItemId(), true);
                 }
             }, Slimefun.getTickerTask().getTickRate() + 1);
         }

@@ -3,16 +3,18 @@ package io.taraxacum.finaltech;
 import io.github.thebusybiscuit.slimefun4.api.SlimefunAddon;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.util.StringNumberUtil;
+import io.taraxacum.finaltech.core.patch.EnergyRegulatorBlockTicker;
+import io.taraxacum.finaltech.setup.TemplateParser;
 import io.taraxacum.finaltech.setup.Updater;
+import io.taraxacum.finaltech.util.ConstantTableUtil;
 import io.taraxacum.libs.plugin.dto.ConfigFileManager;
 import io.taraxacum.libs.plugin.dto.*;
-import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.setup.SetupUtil;
 import io.taraxacum.libs.slimefun.dto.ItemValueTable;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
-import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -21,6 +23,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -45,6 +48,10 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
      * Add by 1 every slimefun tick.
      */
     private int slimefunTickCount = 0;
+    private boolean dataLossFix = false;
+    private boolean dataLossFixCustom = false;
+    private boolean dataLossFixCustomAll = false;
+    private Map<String, Map<String, String>> dataLossFixCustomMap = new HashMap<>();
     private double tps = 20;
     private boolean debugMode = false;
     private CustomLogger logger;
@@ -53,6 +60,7 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
     private ConfigFileManager config;
     private ConfigFileManager value;
     private ConfigFileManager item;
+    private ConfigFileManager template;
     private LanguageManager languageManager;
     private Set<String> asyncSlimefunIdSet = new HashSet<>();
     private Set<String> antiAccelerateSlimefunIdSet = new HashSet<>();
@@ -79,6 +87,7 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
             this.config = ConfigFileManager.getOrNewInstance(this, "config");
             this.value = ConfigFileManager.getOrNewInstance(this, "value");
             this.item = ConfigFileManager.getOrNewInstance(this, "item");
+            this.template = ConfigFileManager.getOrNewInstance(this, "template");
 
             String language = this.config.getOrDefault("en-US", "language");
             this.languageManager = LanguageManager.getOrNewInstance(this, language);
@@ -87,6 +96,9 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
+
+        /* set language manager */
+        SetupUtil.setupLanguageManager(this.languageManager);
 
         /* set logger */
         this.logger = CustomLogger.newInstance(this.getJavaPlugin().getServer().getLogger());
@@ -149,6 +161,24 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
             this.forceSlimefunMultiThread = false;
         }
 
+        /* setup data loss bug fix */
+        this.dataLossFix = this.config.getOrDefault(false, "data-loss-fix", "enable");
+        this.dataLossFixCustom = this.config.getOrDefault(false, "data-loss-fix-custom", "enable");
+        if(this.config.containPath("data-loss-fix-custom", "config")) {
+            this.dataLossFixCustomAll = this.config.getOrDefault(false, "data-loss-fix-custom", "all");
+            if(this.dataLossFixCustomAll) {
+                this.logger.warning("You have enabled all items to be fixed for data loss bug!");
+            }
+            for(String id : this.config.getStringList("data-loss-fix-custom", "config")) {
+                List<String> keyList = this.config.getStringList("data-loss-fix-custom", "config", id);
+                Map<String, String> configMap = new HashMap<>(keyList.size());
+                for(String key : keyList) {
+                    configMap.put(key, this.config.getString("data-loss-fix-custom", "config", id, key));
+                }
+                this.dataLossFixCustomMap.put(id, configMap);
+            }
+        }
+
         /* read tweak for machine */
         this.antiAccelerateSlimefunIdSet = new HashSet<>(this.config.getStringList("tweak", "anti-accelerate", "item"));
         this.performanceLimitSlimefunIdSet = new HashSet<>(this.config.getStringList("tweak", "performance-limit", "item"));
@@ -178,43 +208,97 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
 
                 FinalTech.instance.slimefunTickCount++;
             }
-        }, 0, tickRate);
+        }, tickRate - 1, tickRate);
+
+        /* patches... */
+        if(this.config.getOrDefault(true, "patches", "ENERGY_REGULATOR", "enable")) {
+            new EnergyRegulatorBlockTicker().enable();
+        }
 
         /* set up my items and menus and... */
         SetupUtil.init();
 
-        this.performanceLimitSlimefunIdSet.add(FinalTechItems.ORDERED_DUST_FACTORY_DIRT.getItemId());
-        this.performanceLimitSlimefunIdSet.add(FinalTechItems.ORDERED_DUST_FACTORY_STONE.getItemId());
+        this.performanceLimitSlimefunIdSet.add(FinalTechItemStacks.ORDERED_DUST_FACTORY_DIRT.getItemId());
+        this.performanceLimitSlimefunIdSet.add(FinalTechItemStacks.ORDERED_DUST_FACTORY_STONE.getItemId());
 
         /* mark for some machines */
-        this.antiAccelerateSlimefunIdSet.add(FinalTechItems.ENERGIZED_ACCELERATOR.getItemId());
-        this.antiAccelerateSlimefunIdSet.add(FinalTechItems.OVERLOADED_ACCELERATOR.getItemId());
-        this.antiAccelerateSlimefunIdSet.add(FinalTechItems.ITEM_DESERIALIZE_PARSER.getItemId());
-        this.antiAccelerateSlimefunIdSet.add(FinalTechItems.ENTROPY_SEED.getItemId());
-        this.antiAccelerateSlimefunIdSet.add(FinalTechItems.EQUIVALENT_CONCEPT.getItemId());
-        this.antiAccelerateSlimefunIdSet.add(FinalTechItems.MATRIX_ACCELERATOR.getItemId());
+        this.antiAccelerateSlimefunIdSet.add(FinalTechItemStacks.ENERGIZED_ACCELERATOR.getItemId());
+        this.antiAccelerateSlimefunIdSet.add(FinalTechItemStacks.OVERLOADED_ACCELERATOR.getItemId());
+        this.antiAccelerateSlimefunIdSet.add(FinalTechItemStacks.ITEM_DESERIALIZE_PARSER.getItemId());
+        this.antiAccelerateSlimefunIdSet.add(FinalTechItemStacks.ENTROPY_SEED.getItemId());
+        this.antiAccelerateSlimefunIdSet.add(FinalTechItemStacks.EQUIVALENT_CONCEPT.getItemId());
+        this.antiAccelerateSlimefunIdSet.add(FinalTechItemStacks.MATRIX_ACCELERATOR.getItemId());
+
+        /* setup template machine */
+        // we need more test. and it's not all finished.
+//        int templateMachineDelay = this.config.getOrDefault(-1, "setups", "template-machine", "delay");
+//        if(templateMachineDelay >= 0) {
+//            this.getServer().getScheduler().runTaskLater(this, () -> new TemplateParser(FinalTech.this.template, false, false).registerMachine(), templateMachineDelay);
+//        } else {
+//            new TemplateParser(this.template, false, false).registerMachine();
+//        }
+
+        /* fix data loss for others */
+        if(this.dataLossFixCustom) {
+            int dataLossFixCustomDelay = this.config.getOrDefault(1, "setups", "data-loss-fix-custom", "delay");
+            if(dataLossFixCustomDelay >= 0) {
+                this.getServer().getScheduler().runTaskLater(this, SetupUtil::dataLossFix, dataLossFixCustomDelay);
+            } else {
+                SetupUtil.dataLossFix();
+            }
+        }
 
         /* setup item value table */
-        this.getServer().getScheduler().runTaskLater(this, () -> ItemValueTable.getInstance().init(), this.config.getOrDefault(10, "setups", "item-value-table", "delay"));
+        int itemValueTableDelay = this.config.getOrDefault(10, "setups", "item-value-table", "delay");
+        if(itemValueTableDelay >= 0) {
+            this.getServer().getScheduler().runTaskLater(this, () -> ItemValueTable.getInstance().init(), itemValueTableDelay);
+        } else {
+            ItemValueTable.getInstance().init();
+        }
 
         /* setup slimefun machine block ticker */
         int blockTickerRegisterDelay = this.config.getOrDefault(20, "setups", "slimefun-machine", "delay");
-        if (blockTickerRegisterDelay > 0) {
-            this.getServer().getScheduler().runTask(this, SetupUtil::registerBlockTicker);
+        if (blockTickerRegisterDelay >= 0) {
+            this.getServer().getScheduler().runTaskLater(this, SetupUtil::registerBlockTicker, blockTickerRegisterDelay);
         } else {
             SetupUtil.registerBlockTicker();
         }
 
         /* setup bstats */
         Metrics metrics = new Metrics(this, 16920);
+        metrics.addCustomChart(new AdvancedPie("how_you_translate_gearwheel", () -> {
+            Map<String, Integer> result = new HashMap<>();
+            result.put(FinalTechItemStacks.GEARWHEEL.getDisplayName(), 1);
+            return result;
+        }));
+        metrics.addCustomChart(new AdvancedPie("how_you_called_this_plugin", () -> {
+            Map<String, Integer> result = new HashMap<>();
+            result.put(FinalTech.getLanguageManager().getOrDefault("unknown", "FinalTech"), 1);
+            return result;
+        }));
+        metrics.addCustomChart(new AdvancedPie("data_loss_fix", () -> {
+            Map<String, Integer> result = new HashMap<>();
+            result.put(String.valueOf(FinalTech.getDataLossFix()), 1);
+            return result;
+        }));
+        metrics.addCustomChart(new AdvancedPie("data_loss_fix_for_others", () -> {
+            Map<String, Integer> result = new HashMap<>();
+            result.put(String.valueOf(FinalTech.getDataLossFixCustom()), 1);
+            return result;
+        }));
         metrics.addCustomChart(new AdvancedPie("multi_thread_level", () -> {
             Map<String, Integer> result = new LinkedHashMap<>();
             result.put(String.valueOf(FinalTech.getMultiThreadLevel()), 1);
             return result;
         }));
-        metrics.addCustomChart(new AdvancedPie("languages", () -> {
+        metrics.addCustomChart(new AdvancedPie("patch_for_energy_regulator", () -> {
             Map<String, Integer> result = new HashMap<>();
-            result.put(FinalTech.getConfigManager().getString("language"), 1);
+            result.put(String.valueOf(FinalTech.getConfigManager().getOrDefault(true, "patches", "ENERGY_REGULATOR", "enable")), 1);
+            return result;
+        }));
+        metrics.addCustomChart(new AdvancedPie("config_version", () -> {
+            Map<String, Integer> result = new HashMap<>();
+            result.put(FinalTech.getConfigManager().getOrDefault("unknown", "version"), 1);
             return result;
         }));
     }
@@ -300,6 +384,25 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
 
     public static boolean getForceSlimefunMultiThread() {
         return instance.forceSlimefunMultiThread;
+    }
+
+    public static boolean getDataLossFix() {
+        return instance.dataLossFix;
+    }
+
+    public static boolean getDataLossFixCustom() {
+        return instance.dataLossFixCustom;
+    }
+
+    @Nullable
+    public static Map<String, String> getDataLossFixCustomMap(@Nonnull String id) {
+        Map<String, String> map = instance.dataLossFixCustomMap.get(id);
+        if(map == null && instance.dataLossFixCustomAll) {
+            map = new HashMap<>();
+            map.put(ConstantTableUtil.CONFIG_ID, id);
+            instance.dataLossFixCustomMap.put(id, map);
+        }
+        return map;
     }
 
     public static int getSlimefunTickCount() {

@@ -6,6 +6,8 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
+import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
+import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
@@ -30,12 +32,17 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Final_ROOT
  * @since 2.0
  */
 public class LocationTransfer extends AbstractCargo implements RecipeItem {
+    private final double particleDistance = 0.25;
+    private final int particleInterval = 2;
+
     public LocationTransfer(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
     }
@@ -72,7 +79,7 @@ public class LocationTransfer extends AbstractCargo implements RecipeItem {
         BlockMenu blockMenu = BlockStorage.getInventory(block);
         Location location = block.getLocation();
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-        boolean drawParticle = blockMenu.hasViewer();
+        boolean drawParticle = blockMenu.hasViewer() || RouteShow.VALUE_TRUE.equals(RouteShow.HELPER.getOrDefaultValue(config));
 
         ItemStack locationRecorder = blockMenu.getItemInSlot(LocationTransferMenu.LOCATION_RECORDER_SLOT);
         if (ItemStackUtil.isItemNull(locationRecorder)) {
@@ -88,34 +95,41 @@ public class LocationTransfer extends AbstractCargo implements RecipeItem {
             return;
         }
 
-        if (drawParticle) {
-            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.COMPOSTER, 0, targetBlock));
-        }
-
         String slotSearchSize = SlotSearchSize.HELPER.defaultValue();
         String slotSearchOrder = SlotSearchOrder.HELPER.defaultValue();
 
         CargoDTO cargoDTO = new CargoDTO();
         cargoDTO.setJavaPlugin(this.addon.getJavaPlugin());
 
-        switch (CargoOrder.HELPER.getOrDefaultValue(config)) {
-            case CargoOrder.VALUE_POSITIVE -> {
-                cargoDTO.setInputBlock(block);
-                cargoDTO.setInputSize(SlotSearchSize.VALUE_INPUTS_ONLY);
-                cargoDTO.setInputOrder(SlotSearchOrder.VALUE_ASCENT);
+        boolean positive;
+        if (CargoOrder.VALUE_POSITIVE.equals(CargoOrder.HELPER.getOrDefaultValue(config))) {
+            cargoDTO.setInputBlock(block);
+            cargoDTO.setInputSize(SlotSearchSize.VALUE_INPUTS_ONLY);
+            cargoDTO.setInputOrder(SlotSearchOrder.VALUE_ASCENT);
 
-                cargoDTO.setOutputBlock(targetBlock);
-                cargoDTO.setOutputSize(slotSearchSize);
-                cargoDTO.setOutputOrder(slotSearchOrder);
-            }
-            case CargoOrder.VALUE_REVERSE -> {
-                cargoDTO.setOutputBlock(block);
-                cargoDTO.setOutputSize(SlotSearchSize.VALUE_INPUTS_ONLY);
-                cargoDTO.setOutputOrder(SlotSearchOrder.VALUE_ASCENT);
+            cargoDTO.setOutputBlock(targetBlock);
+            cargoDTO.setOutputSize(slotSearchSize);
+            cargoDTO.setOutputOrder(slotSearchOrder);
+            positive = true;
+        } else {
+            cargoDTO.setOutputBlock(block);
+            cargoDTO.setOutputSize(SlotSearchSize.VALUE_INPUTS_ONLY);
+            cargoDTO.setOutputOrder(SlotSearchOrder.VALUE_ASCENT);
 
-                cargoDTO.setInputBlock(targetBlock);
-                cargoDTO.setInputSize(slotSearchSize);
-                cargoDTO.setInputOrder(slotSearchOrder);
+            cargoDTO.setInputBlock(targetBlock);
+            cargoDTO.setInputSize(slotSearchSize);
+            cargoDTO.setInputOrder(slotSearchOrder);
+            positive = false;
+        }
+
+        if (drawParticle) {
+            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, targetBlock));
+            if(FinalTech.getSlimefunTickCount() % this.particleInterval == 0) {
+                List<Location> locationList = new ArrayList<>();
+                locationList.add(LocationUtil.getCenterLocation(block));
+                locationList.add(LocationUtil.getCenterLocation(targetBlock));
+                final List<Location> finalLocationList = positive ? locationList : JavaUtil.reserve(locationList);
+                javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(javaPlugin, Particle.CRIT_MAGIC, this.particleInterval * Slimefun.getTickerTask().getTickRate() * 50L, this.particleDistance, finalLocationList));
             }
         }
 

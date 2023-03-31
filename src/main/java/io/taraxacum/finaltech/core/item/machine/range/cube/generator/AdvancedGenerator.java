@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
  * @since 1.0
  */
 public class AdvancedGenerator extends AbstractCubeElectricGenerator {
-    private final String electricity = ConfigUtil.getOrDefaultItemSetting("4", this, "electricity");
+    private final int energy = ConfigUtil.getOrDefaultItemSetting(4, this, "energy");
     private final int range = ConfigUtil.getOrDefaultItemSetting(2, this, "range");
 
     public AdvancedGenerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
@@ -19,8 +19,8 @@ public class AdvancedGenerator extends AbstractCubeElectricGenerator {
     }
 
     @Override
-    protected String getElectricity() {
-        return this.electricity;
+    protected int getEnergy() {
+        return this.energy;
     }
 
     @Override

@@ -1,10 +1,15 @@
 package io.taraxacum.finaltech.core.menu;
 
+import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
+import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.util.ConstantTableUtil;
+import io.taraxacum.libs.slimefun.dto.LocationInfo;
+import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 import me.mrCookieSlime.Slimefun.api.inventory.DirtyChestMenu;
@@ -25,16 +30,16 @@ import javax.annotation.Nullable;
  */
 public abstract class AbstractMachineMenu extends BlockMenuPreset {
     @Nonnull
-    private final AbstractMachine machine;
+    private final SlimefunItem slimefunItem;
 
-    public AbstractMachineMenu(@Nonnull String id, @Nonnull String title, @Nonnull AbstractMachine machine) {
+    public AbstractMachineMenu(@Nonnull String id, @Nonnull String title, @Nonnull SlimefunItem slimefunItem) {
         super(id, title);
-        this.machine = machine;
+        this.slimefunItem = slimefunItem;
     }
 
-    public AbstractMachineMenu(@Nonnull AbstractMachine machine) {
-        super(machine.getId(), machine.getItemName());
-        this.machine = machine;
+    public AbstractMachineMenu(@Nonnull SlimefunItem slimefunItem) {
+        super(slimefunItem.getId(), slimefunItem.getItemName());
+        this.slimefunItem = slimefunItem;
     }
 
     @Override
@@ -56,12 +61,25 @@ public abstract class AbstractMachineMenu extends BlockMenuPreset {
     @Override
     public void newInstance(@Nonnull BlockMenu blockMenu, @Nonnull Block block) {
         super.newInstance(blockMenu, block);
+
+        if(FinalTech.getDataLossFix()) {
+            Location location = block.getLocation();
+            LocationInfo locationInfo = LocationInfo.get(block.getLocation());
+            if(locationInfo == null && this.slimefunItem.getItem().getType().equals(block.getType())) {
+                FinalTech.logger().warning("Data Loss Fix For " + FinalTech.getInstance().getName() + ": location " + location + " seems loss its data. There should be " + this.slimefunItem.getId());
+
+                // TODO
+                BlockStorage.addBlockInfo(location, ConstantTableUtil.CONFIG_ID, this.slimefunItem.getId());
+                FinalTech.logger().info("Data Loss Fix For " + FinalTech.getInstance().getName() + ": added location info to location: " + location);
+            }
+        }
+
         this.updateInventory(blockMenu.toInventory(), block.getLocation());
     }
 
     @Override
     public boolean canOpen(@Nonnull Block block, @Nonnull Player player) {
-        return player.hasPermission("slimefun.inventory.bypass") || this.machine.canUse(player, false) && Slimefun.getProtectionManager().hasPermission(player, block.getLocation(), Interaction.INTERACT_BLOCK);
+        return player.hasPermission("slimefun.inventory.bypass") || this.slimefunItem.canUse(player, false) && Slimefun.getProtectionManager().hasPermission(player, block.getLocation(), Interaction.INTERACT_BLOCK);
     }
 
     @Override
@@ -78,11 +96,6 @@ public abstract class AbstractMachineMenu extends BlockMenuPreset {
     @Override
     public int[] getSlotsAccessedByItemTransport(DirtyChestMenu menu, @Nullable ItemTransportFlow flow, ItemStack item) {
         return this.getSlotsAccessedByItemTransport(flow);
-    }
-
-    @Nonnull
-    protected AbstractMachine getMachine() {
-        return this.machine;
     }
 
     protected abstract int[] getBorder();

@@ -3,7 +3,7 @@ package io.taraxacum.finaltech.core.item.machine.template.conversion;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
-import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -17,7 +17,7 @@ public class LogicToDigitalConversion extends AbstractConversionMachine {
 
     @Override
     public void registerDefaultRecipes() {
-        this.registerRecipe(FinalTechItems.LOGIC_FALSE, FinalTechItems.DIGITAL_ZERO);
-        this.registerRecipe(FinalTechItems.LOGIC_TRUE, FinalTechItems.DIGITAL_ONE);
+        this.registerRecipe(FinalTechItemStacks.LOGIC_FALSE, FinalTechItemStacks.DIGITAL_ZERO);
+        this.registerRecipe(FinalTechItemStacks.LOGIC_TRUE, FinalTechItemStacks.DIGITAL_ONE);
     }
 }

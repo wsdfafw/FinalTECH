@@ -7,11 +7,11 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.menu.machine.MatrixReactorMenu;
+import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.StringItemUtil;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.item.unusable.StorageCard;
 import io.taraxacum.finaltech.core.item.machine.cargo.AbstractCargo;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.StorageInteractPortMenu;
@@ -77,9 +77,6 @@ public class StorageInteractPort extends AbstractCargo implements RecipeItem {
     }
 
     private void doFunction(@Nonnull Inventory targetInventory, @Nonnull BlockMenu blockMenu, @Nonnull Location location) {
-        List<ItemWrapper> unOutputItem = new LinkedList<>();
-        List<ItemWrapper> unInputItem = new LinkedList<>();
-
         boolean canInput = !MachineUtil.isEmpty(blockMenu.toInventory(), this.getInputSlot()) && MachineUtil.slotCount(blockMenu.toInventory(), this.getInputSlot()) >= this.getInputSlot().length / 2;
         boolean canOutput = !MachineUtil.isFull(blockMenu.toInventory(), this.getOutputSlot()) && MachineUtil.slotCount(blockMenu.toInventory(), this.getOutputSlot()) < this.getOutputSlot().length / 2;
 
@@ -90,12 +87,8 @@ public class StorageInteractPort extends AbstractCargo implements RecipeItem {
         if (canInput) {
             MachineUtil.stockSlots(blockMenu.toInventory(), this.getInputSlot());
         }
-        if (canOutput) {
-            MachineUtil.stockSlots(blockMenu.toInventory(), this.getOutputSlot());
-        }
 
         canInput = !MachineUtil.isEmpty(blockMenu.toInventory(), this.getInputSlot()) && MachineUtil.slotCount(blockMenu.toInventory(), this.getInputSlot()) >= this.getInputSlot().length / 2;
-        canOutput = !MachineUtil.isFull(blockMenu.toInventory(), this.getOutputSlot()) && MachineUtil.slotCount(blockMenu.toInventory(), this.getOutputSlot()) < this.getOutputSlot().length / 2;
 
         if (!canInput && !canOutput) {
             return;
@@ -103,7 +96,7 @@ public class StorageInteractPort extends AbstractCargo implements RecipeItem {
 
         for (int slot : this.getInputSlot()) {
             ItemStack item = blockMenu.getItemInSlot(slot);
-            if (!ItemStackUtil.isItemNull(item) && !StorageCard.storableItem(item)) {
+            if (!ItemStackUtil.isItemNull(item) && !FinalTechItems.STORAGE_CARD.isTargetItem(item)) {
                 JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
                 javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> blockMenu.dropItems(location, MatrixReactorMenu.ITEM_INPUT_SLOT));
                 return;
@@ -113,18 +106,21 @@ public class StorageInteractPort extends AbstractCargo implements RecipeItem {
         int pushItemAmount = 0;
         List<ItemWrapper> storageCardItemList = new ArrayList<>(Math.min(targetInventory.getSize(), this.searchLimit));
         for (int i = 0, size = Math.min(targetInventory.getSize(), this.searchLimit); i < size; i++) {
-            ItemStack item = targetInventory.getItem(i);
-            if (ItemStackUtil.isItemNull(item) || !item.hasItemMeta()) {
+            ItemStack itemStack = targetInventory.getItem(i);
+            if (ItemStackUtil.isItemNull(itemStack) || !itemStack.hasItemMeta()) {
                 continue;
             }
-            ItemMeta itemMeta = item.getItemMeta();
-            if (StorageCard.isValid(itemMeta)) {
-                storageCardItemList.add(new ItemWrapper(item));
-                if (item.getAmount() == 1) {
+            ItemMeta itemMeta = itemStack.getItemMeta();
+            if (itemMeta != null && FinalTechItems.STORAGE_CARD.verifyItem(itemMeta)) {
+                storageCardItemList.add(new ItemWrapper(itemStack, itemMeta));
+                if (itemStack.getAmount() == 1) {
                     pushItemAmount++;
                 }
             }
         }
+
+        List<ItemWrapper> unOutputItem = new LinkedList<>();
+        List<ItemWrapper> unInputItem = new LinkedList<>();
 
         for (ItemWrapper storageCardItem : storageCardItemList) {
             if (!canInput && !canOutput) {
@@ -186,7 +182,7 @@ public class StorageInteractPort extends AbstractCargo implements RecipeItem {
                 }
             }
             if (pushCount != 0 || stackCount != 0) {
-                StorageCard.updateLore(itemMeta, stringItem.getItemStack());
+                FinalTechItems.STORAGE_CARD.updateLore(itemMeta, stringItem.getItemStack());
                 storageCardItem.getItemStack().setItemMeta(itemMeta);
             }
         }

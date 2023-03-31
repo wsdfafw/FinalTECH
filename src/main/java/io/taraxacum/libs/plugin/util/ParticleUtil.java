@@ -1,7 +1,6 @@
 package io.taraxacum.libs.plugin.util;
 
 import io.taraxacum.common.util.JavaUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
@@ -9,6 +8,7 @@ import org.bukkit.block.Block;
 import org.bukkit.plugin.Plugin;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,7 +34,7 @@ public class ParticleUtil {
                 double[] y = JavaUtil.disperse(totalAmount, location1.getY(), location2.getY());
                 double[] z = JavaUtil.disperse(totalAmount, location1.getZ(), location2.getZ());
                 for (int j = 0; j < totalAmount; j++) {
-                    world.spawnParticle(particle, x[j], y[j], z[j], 1);
+                    world.spawnParticle(particle, x[j], y[j], z[j], 1, 0, 0, 0, 0);
                 }
             }
         }
@@ -49,49 +49,52 @@ public class ParticleUtil {
 
     public static void drawLineByDistance(@Nonnull Plugin plugin, @Nonnull Particle particle, long interval, double distance, @Nonnull Location... locations) {
         int time = 0;
-        for (int i = 0; i < locations.length; i++) {
-            if ((i + 1) < locations.length) {
-                Location location1 = locations[i];
-                Location location2 = locations[i + 1];
+        for (int i = 0; i + 1 < locations.length; i++) {
+            Location location1 = locations[i];
+            Location location2 = locations[i + 1];
 
-                if (distance == 0 || location1.getWorld() == null || location1.getWorld() != location2.getWorld()) {
-                    return;
-                }
-                World world = location1.getWorld();
-                double x = location1.getX();
-                double y = location1.getY();
-                double z = location1.getZ();
-
-                double d = location1.distance(location2);
-                double px = (location2.getX() - location1.getX()) / (d / distance);
-                double py = (location2.getY() - location1.getY()) / (d / distance);
-                double pz = (location2.getZ() - location1.getZ()) / (d / distance);
-
-                if(time < 50) {
-                    for (int j = 0; j < d / distance; j++) {
-                        world.spawnParticle(particle, x, y, z, 1);
-                        x += px;
-                        y += py;
-                        z += pz;
-                    }
-                } else {
-                    double fx = x;
-                    double fy = y;
-                    double fz = z;
-                    plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-                        double x1 = fx;
-                        double y1 = fy;
-                        double z1 = fz;
-                        for (int j = 0; j < d / distance; j++) {
-                            world.spawnParticle(particle, x1, y1, z1, 1);
-                            x1 += px;
-                            y1 += py;
-                            z1 += pz;
-                        }
-                    }, time / 50);
-                }
-                time += interval;
+            if (distance == 0 || location1.getWorld() == null || location1.getWorld() != location2.getWorld()) {
+                return;
             }
+            World world = location1.getWorld();
+            double x = location1.getX();
+            double y = location1.getY();
+            double z = location1.getZ();
+
+            double d = location1.distance(location2);
+            int particleCount = (int) (d / distance);
+            double px = (location2.getX() - x) / (particleCount);
+            double py = (location2.getY() - y) / (particleCount);
+            double pz = (location2.getZ() - z) / (particleCount);
+
+            double t = time;
+            int tick = (int) (t / 50);
+            int lastTick;
+            List<Runnable> runnableList = new ArrayList<>();
+            for (int j = 0; j < particleCount; j++) {
+                x += px;
+                y += py;
+                z += pz;
+                double fx = x;
+                double fy = y;
+                double fz = z;
+                runnableList.add(() -> world.spawnParticle(particle, fx, fy, fz, 1, 0, 0, 0, 0));
+
+                t += (double) interval / particleCount;
+                lastTick = (int) (t / 50);
+                if(tick != lastTick) {
+                    final List<Runnable> finalRunnableList = runnableList;
+                    plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> finalRunnableList.forEach(Runnable::run), tick);
+                    tick = lastTick;
+                    runnableList = new ArrayList<>();
+                }
+            }
+            if(!runnableList.isEmpty()) {
+                final List<Runnable> finalRunnableList = runnableList;
+                plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> finalRunnableList.forEach(Runnable::run), tick);
+            }
+
+            time += interval;
         }
     }
     public static void drawLineByDistance(@Nonnull Plugin plugin, @Nonnull Particle particle, long interval, double distance, @Nonnull List<Location> locationList) {
@@ -115,12 +118,12 @@ public class ParticleUtil {
             int z = location.getBlockZ();
             if(time < 50) {
                 for (int i = 0; i < BLOCK_CUBE_OFFSET_X.length; i++) {
-                    world.spawnParticle(particle, x + BLOCK_CUBE_OFFSET_X[i], y + BLOCK_CUBE_OFFSET_Y[i], z + BLOCK_CUBE_OFFSET_Z[i], 1);
+                    world.spawnParticle(particle, x + BLOCK_CUBE_OFFSET_X[i], y + BLOCK_CUBE_OFFSET_Y[i], z + BLOCK_CUBE_OFFSET_Z[i], 1, 0, 0, 0, 0);
                 }
             } else {
                 plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
                     for (int i = 0; i < BLOCK_CUBE_OFFSET_X.length; i++) {
-                        world.spawnParticle(particle, x + BLOCK_CUBE_OFFSET_X[i], y + BLOCK_CUBE_OFFSET_Y[i], z + BLOCK_CUBE_OFFSET_Z[i], 1);
+                        world.spawnParticle(particle, x + BLOCK_CUBE_OFFSET_X[i], y + BLOCK_CUBE_OFFSET_Y[i], z + BLOCK_CUBE_OFFSET_Z[i], 1, 0, 0, 0, 0);
                     }
                 }, time / 50);
             }

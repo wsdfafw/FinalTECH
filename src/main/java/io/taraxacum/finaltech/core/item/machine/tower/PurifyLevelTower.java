@@ -7,6 +7,7 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.unit.StatusL2Menu;
@@ -32,7 +33,7 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  * @since 2.0
  */
-public class PurifyLevelTower extends AbstractTower implements RecipeItem {
+public class PurifyLevelTower extends AbstractTower implements RecipeItem, MenuUpdater {
     private final double baseRange = ConfigUtil.getOrDefaultItemSetting(3.2, this, "range-base");
     private final double mulRange = ConfigUtil.getOrDefaultItemSetting(0.2, this, "range-mul");
 
@@ -62,14 +63,15 @@ public class PurifyLevelTower extends AbstractTower implements RecipeItem {
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
         Location location = block.getLocation();
         BlockMenu blockMenu = BlockStorage.getInventory(location);
-        ItemStack item = blockMenu.getItemInSlot(this.getInputSlot()[0]);
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-        double range = this.baseRange;
-        if (ItemStackUtil.isItemSimilar(item, this.getItem())) {
-            range += item.getAmount() * this.mulRange;
-        }
 
+        double range = this.baseRange;
+        ItemStack itemStack = blockMenu.getItemInSlot(this.getInputSlot()[0]);
+        if (ItemStackUtil.isItemSimilar(itemStack, this.getItem())) {
+            range += itemStack.getAmount() * this.mulRange;
+        }
         final double finalRange = range;
+
         javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
             int count = 0;
             for (Entity entity : location.getWorld().getNearbyEntities(LocationUtil.getCenterLocation(block), finalRange, finalRange, finalRange, entity -> entity instanceof LivingEntity)) {
@@ -84,16 +86,11 @@ public class PurifyLevelTower extends AbstractTower implements RecipeItem {
             }
 
             if (blockMenu.hasViewer()) {
-                PurifyLevelTower.this.updateMenu(blockMenu, count, finalRange);
+                this.updateMenu(blockMenu, StatusL2Menu.STATUS_SLOT, this,
+                        String.valueOf(count),
+                        String.valueOf(finalRange));
             }
         });
-    }
-
-    private void updateMenu(@Nonnull BlockMenu blockMenu, int amount, double range) {
-        ItemStack item = blockMenu.getItemInSlot(StatusL2Menu.STATUS_SLOT);
-        ItemStackUtil.setLore(item, ConfigUtil.getStatusMenuLore(FinalTech.getLanguageManager(), this,
-                String.valueOf(amount),
-                String.valueOf(range)));
     }
 
     @Override

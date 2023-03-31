@@ -19,26 +19,37 @@ import javax.annotation.Nonnull;
  * @since 2.2
  */
 public class GravityReversalRune extends UsableSlimefunItem implements RecipeItem {
+    private final int interval = ConfigUtil.getOrDefaultItemSetting(500, this, "interval");
+    private final int threshold = ConfigUtil.getOrDefaultItemSetting(2, this, "threshold");
+
     public GravityReversalRune(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
     }
 
-    /**
-     * The function the item will do
-     * while a player hold the item and right click.
-     *
-     * @param playerRightClickEvent
-     */
     @Override
     protected void function(@Nonnull PlayerRightClickEvent playerRightClickEvent) {
+        playerRightClickEvent.cancel();
+
         Player player = playerRightClickEvent.getPlayer();
+        boolean sprinting = player.isSprinting();
         Vector velocity = player.getVelocity();
         Vector vector = velocity.setY(velocity.getY() * -1);
         player.setVelocity(vector);
+        player.setSprinting(sprinting);
     }
 
     @Override
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this);
+    }
+
+    @Override
+    int getThreshold() {
+        return this.threshold;
+    }
+
+    @Override
+    int getInterval() {
+        return this.interval;
     }
 }

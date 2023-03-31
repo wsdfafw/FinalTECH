@@ -1,7 +1,7 @@
 package io.taraxacum.finaltech.core.menu.clicker;
 
 import io.taraxacum.finaltech.core.helper.ForceClose;
-import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
+import io.taraxacum.finaltech.core.item.machine.clicker.AbstractClickerMachine;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  * @since 2.2
  */
-public class ClickWorkMachineMenu extends AbstractAccessorMenu {
+public class ClickWorkMachineMenu extends AbstractClickerMenu {
     private static final int[] BORDER = new int[] {0, 1, 2, 3, 5, 6, 7, 8, 9, 10, 13, 16, 17};
     private static final int[] INPUT_BORDER = new int[] {11};
     private static final int[] OUTPUT_BORDER = new int[] {15};
@@ -27,8 +27,8 @@ public class ClickWorkMachineMenu extends AbstractAccessorMenu {
     private static final int[] OUTPUT_SLOT = new int[] {14};
     private static final int FORCE_CLOSE_SLOT = 4;
 
-    public ClickWorkMachineMenu(@Nonnull AbstractMachine machine) {
-        super(machine);
+    public ClickWorkMachineMenu(@Nonnull AbstractClickerMachine slimefunItem) {
+        super(slimefunItem);
     }
 
     @Override
@@ -91,8 +91,9 @@ public class ClickWorkMachineMenu extends AbstractAccessorMenu {
 
             blockMenu.pushItem(outputItem, OUTPUT_SLOT);
             blockMenu.close();
+
             JavaPlugin javaPlugin = this.getSlimefunItem().getAddon().getJavaPlugin();
-            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.GLOW, 0, block));
+            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
         }
     }
 

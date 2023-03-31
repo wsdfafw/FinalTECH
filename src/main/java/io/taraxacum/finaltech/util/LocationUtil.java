@@ -76,30 +76,6 @@ public class LocationUtil {
         return locations;
     }
 
-    /**
-     * Get the #{@link String}Number at the given #{@link Location} by the key of the #{@link BlockStorage}
-     */
-    @Nonnull
-    public static String getNonNullStringNumber(@Nonnull Location location, @Nonnull String key) {
-        String value = BlockStorage.getLocationInfo(location, key);
-        if (value == null) {
-            value = StringNumberUtil.ZERO;
-        }
-        return value;
-    }
-
-    /**
-     * Get the #{@link String}Number from the given #{@link Config} by the key.
-     */
-    @Nonnull
-    public static String getNonNullStringNumber(@Nonnull Config config, @Nonnull String key) {
-        String value = config.getString(key);
-        if (value == null) {
-            value = StringNumberUtil.ZERO;
-        }
-        return value;
-    }
-
     @Nullable
     public static Location parseLocationInItem(@Nullable ItemStack item) {
         if (ItemStackUtil.isItemNull(item)) {
@@ -111,8 +87,8 @@ public class LocationUtil {
     @Nullable
     public static Location parseLocationInItem(@Nonnull ItemMeta itemMeta) {
         PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
-        if (persistentDataContainer.has(KEY, PersistentDataType.STRING)) {
-            String locationString = persistentDataContainer.get(KEY, PersistentDataType.STRING);
+        String locationString = persistentDataContainer.get(KEY, PersistentDataType.STRING);
+        if (locationString != null) {
             return LocationUtil.stringToLocation(locationString);
         }
         return null;
@@ -123,6 +99,9 @@ public class LocationUtil {
             return false;
         }
         ItemMeta itemMeta = item.getItemMeta();
+        if(itemMeta == null) {
+            return false;
+        }
         PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
         persistentDataContainer.set(KEY, PersistentDataType.STRING, LocationUtil.locationToString(location));
         item.setItemMeta(itemMeta);
@@ -135,9 +114,12 @@ public class LocationUtil {
             return false;
         }
         ItemMeta itemMeta = item.getItemMeta();
+        if(itemMeta == null) {
+            return false;
+        }
         PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
-        if (persistentDataContainer.has(KEY, PersistentDataType.STRING)) {
-            String locationString = persistentDataContainer.get(KEY, PersistentDataType.STRING);
+        String locationString = persistentDataContainer.get(KEY, PersistentDataType.STRING);
+        if (locationString != null) {
             Location location = LocationUtil.stringToLocation(locationString);
             if (location != null) {
                 List<String> loreList = new ArrayList<>();
@@ -157,24 +139,6 @@ public class LocationUtil {
         location.setY(location.getBlockY() + 0.5);
         location.setZ(location.getBlockZ() + 0.5);
         return location;
-    }
-
-    @Nonnull
-    public static Set<Location> parseLocation(@Nonnull Block... blocks) {
-        Set<Location> locationSet = new HashSet<>(blocks.length);
-        for (Block block : blocks) {
-            locationSet.add(block.getLocation());
-        }
-        return locationSet;
-    }
-
-    @Nonnull
-    public static Set<Location> parseLocation(@Nonnull List<Block> blocks) {
-        Set<Location> locationSet = new HashSet<>(blocks.size());
-        for (Block block : blocks) {
-            locationSet.add(block.getLocation());
-        }
-        return locationSet;
     }
 
     @Nullable

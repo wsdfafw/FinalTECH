@@ -3,7 +3,7 @@ package io.taraxacum.finaltech.core.item.machine.template.generator;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
-import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -17,9 +17,9 @@ public class DigitalGenerator extends AbstractGeneratorMachine{
 
     @Override
     void registerRandomOutputRecipes() {
-        this.registerRecipe(FinalTechItems.DIGITAL_ONE);
-        this.registerRecipe(FinalTechItems.DIGITAL_TWO);
-        this.registerRecipe(FinalTechItems.DIGITAL_THREE);
-        this.registerRecipe(FinalTechItems.DIGITAL_FOUR);
+        this.registerRecipe(FinalTechItemStacks.DIGITAL_ONE);
+        this.registerRecipe(FinalTechItemStacks.DIGITAL_TWO);
+        this.registerRecipe(FinalTechItemStacks.DIGITAL_THREE);
+        this.registerRecipe(FinalTechItemStacks.DIGITAL_FOUR);
     }
 }

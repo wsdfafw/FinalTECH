@@ -8,12 +8,12 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.OrderedDustFactoryStoneMenu;
-import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
@@ -35,7 +35,7 @@ import java.util.Set;
  * @since 2.0
  */
 public class DustFactoryStone extends AbstractMachine implements RecipeItem {
-    private final double sleep = ConfigUtil.getOrDefaultItemSetting(4, this, "sleep");
+    private final double SLEEP = ConfigUtil.getOrDefaultItemSetting(4, this, "sleep");
     public DustFactoryStone(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
     }
@@ -48,7 +48,8 @@ public class DustFactoryStone extends AbstractMachine implements RecipeItem {
             public void onPlayerPlace(@Nonnull BlockPlaceEvent e) {
                 Block block = e.getBlock();
                 Location location = block.getLocation();
-                BlockTickerUtil.setSleep(location, String.valueOf(DustFactoryStone.this.sleep * DustFactoryStone.this.sleep));
+                Config config = BlockStorage.getLocationInfo(location);
+                BlockTickerUtil.setSleep(config, String.valueOf(DustFactoryStone.this.SLEEP * DustFactoryStone.this.SLEEP));
             }
         };
     }
@@ -80,34 +81,25 @@ public class DustFactoryStone extends AbstractMachine implements RecipeItem {
         Set<Integer> amountList = new HashSet<>(this.getInputSlot().length);
         ItemWrapper firstItem = new ItemWrapper(blockMenu.getItemInSlot(this.getInputSlot()[0]));
         boolean allSameItem = true;
-        int maxAmount = firstItem.getItemStack().getAmount();
-        int minAmount = firstItem.getItemStack().getAmount();
 
         for (int slot : this.getInputSlot()) {
-            ItemStack item = blockMenu.getItemInSlot(slot);
-            amountList.add(item.getAmount());
-            if (allSameItem && !ItemStackUtil.isItemSimilar(firstItem, item)) {
+            ItemStack itemStack = blockMenu.getItemInSlot(slot);
+            amountList.add(itemStack.getAmount());
+            if (allSameItem && !ItemStackUtil.isItemSimilar(firstItem, itemStack)) {
                 allSameItem = false;
             }
-            if(maxAmount < item.getAmount()) {
-                maxAmount = item.getAmount();
-            } else if(minAmount > item.getAmount()) {
-                minAmount = item.getAmount();
-            }
         }
-
-        int sleep = 64 - maxAmount + minAmount;
-        sleep *= sleep;
 
         for (int slot : this.getInputSlot()) {
             blockMenu.replaceExistingItem(slot, ItemStackUtil.AIR);
         }
+
         if (amountList.size() == this.getInputSlot().length && allSameItem) {
-            blockMenu.pushItem(FinalTechItems.ORDERED_DUST.clone(), JavaUtil.shuffle(this.getOutputSlot()));
-            BlockTickerUtil.setSleep(config, String.valueOf(this.sleep + FinalTech.getRandom().nextDouble(sleep)));
+            blockMenu.pushItem(FinalTechItems.ORDERED_DUST.getValidItem(), JavaUtil.shuffle(this.getOutputSlot()));
+            BlockTickerUtil.setSleep(config, String.valueOf(this.SLEEP));
         } else if (Math.random() < (double)(amountList.size()) / this.getInputSlot().length) {
-            blockMenu.pushItem(FinalTechItems.UNORDERED_DUST.clone(), JavaUtil.shuffle(this.getOutputSlot()));
-            BlockTickerUtil.setSleep(config, String.valueOf(this.sleep + FinalTech.getRandom().nextDouble(sleep)));
+            blockMenu.pushItem(FinalTechItems.UNORDERED_DUST.getValidItem(), JavaUtil.shuffle(this.getOutputSlot()));
+            BlockTickerUtil.setSleep(config, String.valueOf(this.SLEEP));
         }
     }
 

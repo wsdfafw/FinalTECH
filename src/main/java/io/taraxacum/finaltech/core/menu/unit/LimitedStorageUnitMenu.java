@@ -1,8 +1,8 @@
 package io.taraxacum.finaltech.core.menu.unit;
 
-import io.github.thebusybiscuit.slimefun4.utils.itemstack.ItemStackWrapper;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
+import io.taraxacum.libs.plugin.dto.ItemWrapper;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import me.mrCookieSlime.Slimefun.api.inventory.DirtyChestMenu;
 import me.mrCookieSlime.Slimefun.api.item_transport.ItemTransportFlow;
@@ -65,7 +65,7 @@ public class LimitedStorageUnitMenu extends AbstractMachineMenu {
     }
 
     @Override
-    public int[] getSlotsAccessedByItemTransport(DirtyChestMenu menu, ItemTransportFlow flow, ItemStack item) {
+    public int[] getSlotsAccessedByItemTransport(DirtyChestMenu menu, ItemTransportFlow flow, ItemStack itemStack) {
         if (ItemTransportFlow.WITHDRAW.equals(flow)) {
             return OUTPUT_SLOT;
         } else if (flow == null) {
@@ -77,12 +77,12 @@ public class LimitedStorageUnitMenu extends AbstractMachineMenu {
 
         ArrayList<Integer> itemList = new ArrayList<>();
         ArrayList<Integer> nullList = new ArrayList<>();
-        ItemStackWrapper itemStackWrapper = ItemStackWrapper.wrap(item);
+        ItemWrapper itemWrapper = new ItemWrapper(itemStack);
         for (int slot : this.getInputSlot()) {
             ItemStack existedItem = menu.getItemInSlot(slot);
             if (ItemStackUtil.isItemNull(existedItem)) {
                 nullList.add(slot);
-            } else if (ItemStackUtil.isItemSimilar(itemStackWrapper, existedItem)) {
+            } else if (ItemStackUtil.isItemSimilar(itemWrapper, existedItem)) {
                 if (existedItem.getAmount() < existedItem.getMaxStackSize()) {
                     itemList.add(slot);
                 } else {

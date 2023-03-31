@@ -42,8 +42,8 @@ public class MenuViewer extends UsableSlimefunItem implements RecipeItem {
 
     @Override
     protected void function(@Nonnull PlayerRightClickEvent playerRightClickEvent) {
-        Player player = playerRightClickEvent.getPlayer();
         playerRightClickEvent.cancel();
+        Player player = playerRightClickEvent.getPlayer();
         if (!playerRightClickEvent.getClickedBlock().isEmpty()) {
             Location location = playerRightClickEvent.getClickedBlock().get().getLocation();
             BlockMenu blockMenu = BlockStorage.getInventory(location);

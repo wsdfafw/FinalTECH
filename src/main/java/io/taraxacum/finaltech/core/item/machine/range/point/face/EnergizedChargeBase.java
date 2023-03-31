@@ -8,13 +8,15 @@ import io.github.thebusybiscuit.slimefun4.core.attributes.EnergyNetComponent;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponentType;
+import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.util.*;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
-import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
+import io.taraxacum.libs.slimefun.dto.LocationInfo;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
@@ -25,13 +27,16 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Final_ROOT
  * @since 2.0
  */
-public class EnergizedChargeBase extends AbstractFaceMachine implements RecipeItem {
-    private final double effective = ConfigUtil.getOrDefaultItemSetting(0.25, this, "effective");
+public class EnergizedChargeBase extends AbstractFaceMachine implements RecipeItem, MenuUpdater {
+    private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
+    private final double efficiency = ConfigUtil.getOrDefaultItemSetting(0.25, this, "efficiency");
 
     public EnergizedChargeBase(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -57,18 +62,17 @@ public class EnergizedChargeBase extends AbstractFaceMachine implements RecipeIt
 
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        this.function(block, 1, location -> {
-            if (BlockStorage.hasBlockInfo(location)) {
-                Config targetConfig = BlockStorage.getLocationInfo(location);
-                if (targetConfig.contains(ConstantTableUtil.CONFIG_ID)) {
-                    String targetSlimefunId = targetConfig.getString(ConstantTableUtil.CONFIG_ID);
-                    BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(targetSlimefunId), () -> EnergizedChargeBase.this.doCharge(block, targetConfig), location);
-                    return 0;
-                }
+        this.pointFunction(block, 1, location -> {
+            LocationInfo locationInfo = LocationInfo.get(location);
+            if (locationInfo != null && !notAllowedId.contains(locationInfo.getId())) {
+                BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(locationInfo.getId()), () -> EnergizedChargeBase.this.doCharge(block, locationInfo), location);
+                return 0;
             }
             BlockMenu blockMenu = BlockStorage.getInventory(block);
             if (blockMenu.hasViewer()) {
-                this.updateMenu(blockMenu, 0, 0);
+                this.updateMenu(blockMenu, StatusMenu.STATUS_SLOT, this,
+                        "0",
+                        "0");
             }
             return 0;
         });
@@ -79,33 +83,26 @@ public class EnergizedChargeBase extends AbstractFaceMachine implements RecipeIt
         return false;
     }
 
-    private void doCharge(@Nonnull Block block, @Nonnull Config targetConfig) {
+    private void doCharge(@Nonnull Block block, @Nonnull LocationInfo locationInfo) {
         int storedEnergy = 0;
         int chargeEnergy = 0;
 
-        String slimefunItemId = targetConfig.getString(ConstantTableUtil.CONFIG_ID);
-        SlimefunItem slimefunItem = SlimefunItem.getById(slimefunItemId);
-        if (slimefunItem instanceof EnergyNetComponent energyNetComponent && !EnergyNetComponentType.CAPACITOR.equals(energyNetComponent.getEnergyComponentType()) && !EnergyNetComponentType.GENERATOR.equals(energyNetComponent.getEnergyComponentType())) {
+        if (locationInfo.getSlimefunItem() instanceof EnergyNetComponent energyNetComponent && !JavaUtil.matchOnce(energyNetComponent.getEnergyComponentType(), EnergyNetComponentType.CAPACITOR, EnergyNetComponentType.GENERATOR)) {
             int capacity = energyNetComponent.getCapacity();
-            storedEnergy = Integer.parseInt(EnergyUtil.getCharge(targetConfig));
-            chargeEnergy = capacity * EnergizedChargeBase.this.effective > capacity - storedEnergy ? capacity - storedEnergy : (int)(capacity * EnergizedChargeBase.this.effective);
+            storedEnergy = Integer.parseInt(EnergyUtil.getCharge(locationInfo.getConfig()));
+            chargeEnergy = Math.min(capacity - storedEnergy, (int)(capacity * EnergizedChargeBase.this.efficiency));
             if (chargeEnergy > 0) {
                 storedEnergy += chargeEnergy;
-                EnergyUtil.setCharge(targetConfig, storedEnergy);
+                EnergyUtil.setCharge(locationInfo.getConfig(), storedEnergy);
             }
         }
 
         BlockMenu blockMenu = BlockStorage.getInventory(block);
         if (blockMenu.hasViewer()) {
-            this.updateMenu(blockMenu, storedEnergy, chargeEnergy);
+            this.updateMenu(blockMenu, StatusMenu.STATUS_SLOT, this,
+                    String.valueOf(storedEnergy),
+                    String.valueOf(chargeEnergy));
         }
-    }
-
-    private void updateMenu(@Nonnull BlockMenu blockMenu, int storedEnergy, int chargeEnergy) {
-        ItemStack item = blockMenu.getItemInSlot(StatusMenu.STATUS_SLOT);
-        ItemStackUtil.setLore(item, ConfigUtil.getStatusMenuLore(FinalTech.getLanguageManager(), this,
-                String.valueOf(storedEnergy),
-                String.valueOf(chargeEnergy)));
     }
 
     @Nonnull
@@ -117,6 +114,6 @@ public class EnergizedChargeBase extends AbstractFaceMachine implements RecipeIt
     @Override
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
-                String.valueOf(this.effective));
+                String.valueOf(this.efficiency));
     }
 }

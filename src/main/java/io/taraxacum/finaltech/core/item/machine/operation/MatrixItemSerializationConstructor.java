@@ -12,11 +12,9 @@ import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.ItemSerializationConstructorMenu;
 import io.taraxacum.finaltech.core.operation.ItemCopyCardOperation;
 import io.taraxacum.finaltech.core.operation.ItemSerializationConstructorOperation;
-import io.taraxacum.finaltech.util.BlockTickerUtil;
-import io.taraxacum.finaltech.util.LocationUtil;
+import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.finaltech.util.*;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
-import io.taraxacum.finaltech.util.RecipeUtil;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
@@ -38,8 +36,9 @@ public class MatrixItemSerializationConstructor extends AbstractOperationMachine
     private final CustomItemStack nullInfoIcon = new CustomItemStack(Material.RED_STAINED_GLASS_PANE, FinalTech.getLanguageString("items", this.getId(), "null-icon", "name"), FinalTech.getLanguageStringArray("items", this.getId(), "null-icon", "lore"));
     private final String blockStorageItemKey = "item";
     private final String blockStorageAmountKey = "amount";
-    public static List<Location> LOCATION_LIST = new ArrayList<>();
-    public static List<Location> LAST_LOCATION_LIST = new ArrayList<>();
+
+    private List<Location> locationList = new ArrayList<>();
+    private List<Location> lastLocationList = new ArrayList<>();
 
     public MatrixItemSerializationConstructor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -69,24 +68,24 @@ public class MatrixItemSerializationConstructor extends AbstractOperationMachine
 
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        LOCATION_LIST.add(block.getLocation());
+        Location location = block.getLocation();
+        this.locationList.add(location);
+        BlockMenu blockMenu = BlockStorage.getInventory(block);
 
-        if(FinalTech.getTps() < 19.5 && LAST_LOCATION_LIST.size() > 1) {
+        if(FinalTech.getTps() < 19.5 && this.lastLocationList.size() > 1) {
             if (BlockTickerUtil.hasSleep(config)) {
                 BlockTickerUtil.subSleep(config);
                 return;
             }
 
-            Location randomLocation = LAST_LOCATION_LIST.get(FinalTech.getRandom().nextInt(LAST_LOCATION_LIST.size()));
-            Location location = block.getLocation();
+            Location randomLocation = this.lastLocationList.get(FinalTech.getRandom().nextInt(this.lastLocationList.size()));
             double manhattanDistance = LocationUtil.getManhattanDistance(randomLocation, location);
-            if(manhattanDistance < LAST_LOCATION_LIST.size()) {
-                BlockTickerUtil.setSleep(config, String.valueOf(LAST_LOCATION_LIST.size() * (int)(20 - FinalTech.getTps() + 1)));
+            if(manhattanDistance < this.lastLocationList.size()) {
+                BlockTickerUtil.setSleep(config, String.valueOf(this.lastLocationList.size() * (int)(20 - FinalTech.getTps() + 1) * (1 + MachineUtil.slotCount(blockMenu.toInventory(), this.getInputSlot()))));
                 return;
             }
         }
 
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
         ItemSerializationConstructorOperation operation = (ItemSerializationConstructorOperation) this.getMachineProcessor().getOperation(block);
 
         if (operation == null && config.contains(this.blockStorageItemKey)) {
@@ -109,9 +108,10 @@ public class MatrixItemSerializationConstructor extends AbstractOperationMachine
             }
             if (operation == null) {
                 operation = ItemSerializationConstructorOperation.newInstance(inputItem);
-                if (operation != null) {
-                    this.getMachineProcessor().startOperation(block, operation);
+                if (operation == null) {
+                    break;
                 }
+                this.getMachineProcessor().startOperation(block, operation);
             } else {
                 operation.addItem(inputItem);
             }
@@ -121,15 +121,15 @@ public class MatrixItemSerializationConstructor extends AbstractOperationMachine
             blockMenu.pushItem(operation.getResult(), this.getOutputSlot());
             this.getMachineProcessor().endOperation(block);
             operation = null;
-            BlockStorage.addBlockInfo(block.getLocation(), this.blockStorageItemKey, null);
-            BlockStorage.addBlockInfo(block.getLocation(), this.blockStorageAmountKey, null);
+            BlockStorage.addBlockInfo(location, this.blockStorageItemKey, null);
+            BlockStorage.addBlockInfo(location, this.blockStorageAmountKey, null);
         }
 
         if (operation != null && operation.getType() == ItemSerializationConstructorOperation.COPY_CARD) {
             if(!config.contains(this.blockStorageItemKey)) {
-                BlockStorage.addBlockInfo(block.getLocation(), this.blockStorageItemKey, ItemStackUtil.itemStackToString(((ItemCopyCardOperation)operation).getMatchItem()));
+                BlockStorage.addBlockInfo(location, this.blockStorageItemKey, ItemStackUtil.itemStackToString(((ItemCopyCardOperation)operation).getMatchItem()));
             }
-            BlockStorage.addBlockInfo(block.getLocation(), this.blockStorageAmountKey, String.valueOf((int)((ItemCopyCardOperation)operation).getCount()));
+            BlockStorage.addBlockInfo(location, this.blockStorageAmountKey, String.valueOf((int)((ItemCopyCardOperation)operation).getCount()));
         }
 
         if (blockMenu.hasViewer()) {
@@ -147,14 +147,16 @@ public class MatrixItemSerializationConstructor extends AbstractOperationMachine
     @Override
     protected void uniqueTick() {
         super.uniqueTick();
-        List<Location> locationList = LAST_LOCATION_LIST;
-        LAST_LOCATION_LIST = LOCATION_LIST;
-        LOCATION_LIST = locationList;
-        LOCATION_LIST.clear();
+        List<Location> locationList = this.lastLocationList;
+        this.lastLocationList = this.locationList;
+        this.locationList = locationList;
+        this.locationList.clear();
 
-        ItemSerializationConstructor.EFFICIENCY = Math.pow(ItemSerializationConstructor.RATE / (1 + ItemSerializationConstructor.LAST_LOCATION_LIST.size() + MatrixItemSerializationConstructor.LAST_LOCATION_LIST.size()), 20.0 - FinalTech.getTps());
-        if(FinalTech.getTps() < 20.0) {
-            ItemSerializationConstructor.EFFICIENCY /= 1 + ItemSerializationConstructor.LAST_LOCATION_LIST.size() + MatrixItemSerializationConstructor.LAST_LOCATION_LIST.size();
+        if(FinalTech.getTps() < ConstantTableUtil.WARNING_TPS) {
+            FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.setEfficiency(Math.pow(FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getRate() / (1 + FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getLastLocationList().size() + this.lastLocationList.size()), 20.0 - FinalTech.getTps()));
+            FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.setEfficiency(FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getEfficiency() / (1 + FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getLastLocationList().size() + this.lastLocationList.size()));
+        } else {
+            FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.setEfficiency(1);
         }
     }
 
@@ -164,5 +166,13 @@ public class MatrixItemSerializationConstructor extends AbstractOperationMachine
                 String.valueOf(ConstantTableUtil.ITEM_COPY_CARD_AMOUNT),
                 String.valueOf(ConstantTableUtil.ITEM_SINGULARITY_AMOUNT),
                 String.valueOf(ConstantTableUtil.ITEM_SPIROCHETE_AMOUNT));
+    }
+
+    public List<Location> getLocationList() {
+        return locationList;
+    }
+
+    public List<Location> getLastLocationList() {
+        return lastLocationList;
     }
 }

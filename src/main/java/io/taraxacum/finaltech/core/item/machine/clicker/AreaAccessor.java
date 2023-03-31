@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
  * @since 2.0
  */
 public class AreaAccessor extends AbstractClickerMachine implements RecipeItem {
-    public static final int RANGE = ConfigUtil.getOrDefaultItemSetting(8, SfItemUtil.getIdFormatName(AreaAccessor.class), "range");
+    private final int range = ConfigUtil.getOrDefaultItemSetting(8, this, "range");
 
     public AreaAccessor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -28,12 +28,12 @@ public class AreaAccessor extends AbstractClickerMachine implements RecipeItem {
     @Nonnull
     @Override
     protected AbstractMachineMenu setMachineMenu() {
-        return new AreaAccessorMenu(this);
+        return new AreaAccessorMenu(this, this.range);
     }
 
     @Override
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
-                String.valueOf(RANGE));
+                String.valueOf(this.range));
     }
 }

@@ -1,6 +1,5 @@
 package io.taraxacum.finaltech.core.menu.cargo;
 
-import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.helper.*;
@@ -16,9 +15,9 @@ import javax.annotation.Nonnull;
  * @since 2.0
  */
 public class PointTransferMenu extends AbstractMachineMenu {
-    private static final int[] BORDER = new int[] {1, 3, 4, 5, 7, 10, 14, 16, 21, 22, 23, 27, 28, 29, 33, 34, 35, 36, 37, 38, 42, 43, 44, 45, 46, 47, 51, 52, 53};
-    private static final int[] INPUT_BORDER = new int[] {0, 2, 9, 11, 18, 20};
-    private static final int[] OUTPUT_BORDER = new int[] {6, 8, 15, 17, 24, 26};
+    private static final int[] BORDER = new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 14, 15, 16, 17, 21, 22, 23, 27, 28, 29, 33, 34, 35, 36, 37, 38, 42, 43, 44, 45, 46, 47, 51, 52, 53};
+    private static final int[] INPUT_BORDER = new int[] {18, 20};
+    private static final int[] OUTPUT_BORDER = new int[] {24, 26};
     private static final int[] INPUT_SLOT = new int[] {30, 31, 32, 39, 40, 41, 48, 49, 50};
     private static final int[] OUTPUT_SLOT = new int[] {30, 31, 32, 39, 40, 41, 48, 49, 50};
 

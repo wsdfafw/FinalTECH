@@ -22,7 +22,7 @@ public class RecipeTypeRegistry {
         this.init();
     }
 
-    public void init() {
+    public synchronized void init() {
         if (this.init) {
             return;
         }
@@ -64,7 +64,7 @@ public class RecipeTypeRegistry {
     }
 
     public Set<RecipeType> getRecipeTypeSet() {
-        return recipeTypeSet;
+        return this.recipeTypeSet;
     }
 
     public Map<RecipeType, List<SlimefunItem>> getRecipeSlimefunItemMap() {
@@ -79,15 +79,6 @@ public class RecipeTypeRegistry {
             }
         }
         return null;
-    }
-
-    @Nonnull
-    public List<SlimefunItem> getWithSameRecipeType(@Nonnull SlimefunItem slimefunItem) {
-        if (this.recipeSlimefunItemMap.containsKey(slimefunItem.getRecipeType())) {
-            return this.recipeSlimefunItemMap.get(slimefunItem.getRecipeType());
-        } else {
-            return new ArrayList<>();
-        }
     }
 
     @Nonnull

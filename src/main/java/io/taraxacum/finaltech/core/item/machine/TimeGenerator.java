@@ -62,20 +62,17 @@ public class TimeGenerator extends AbstractMachine implements EnergyNetProvider,
         Location location = block.getLocation();
         World world = location.getWorld();
         int charge = this.getCharge(location);
-        charge += 1;
 
         if(world != null) {
             long time = world.getTime() / this.interval;
-            if(config.contains(this.key)) {
-                String oldTime = config.getString(this.key);
-                if(!oldTime.equals(String.valueOf(time))) {
-                    charge *= 2;
-                    config.setValue(this.key, String.valueOf(time));
-                }
-            } else {
-                config.setValue(this.key, String.valueOf(time));
+            String oldTime = config.getString(this.key);
+            if(oldTime != null && !oldTime.equals(String.valueOf(time))) {
+                charge *= 2;
             }
+            config.setValue(this.key, String.valueOf(time));
         }
+
+        charge += 1;
 
         charge = charge > this.capacity ? 0 : charge;
         this.setCharge(location, charge);

@@ -19,10 +19,10 @@ import io.taraxacum.finaltech.core.menu.unit.VoidMenu;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
+import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.libs.slimefun.dto.LocationInfo;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineFuel;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -63,17 +63,11 @@ public class FuelOperator extends AbstractFaceMachine implements RecipeItem {
 
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        this.function(block, 1, location -> {
-            if (BlockStorage.hasBlockInfo(location)) {
-                Config targetConfig = BlockStorage.getLocationInfo(location);
-                if (targetConfig.contains(ConstantTableUtil.CONFIG_ID)) {
-                    String targetSlimefunId = targetConfig.getString(ConstantTableUtil.CONFIG_ID);
-                    if(!this.notAllowedId.contains(targetSlimefunId)) {
-                        SlimefunItem targetSlimefunItem = SlimefunItem.getById(targetSlimefunId);
-                        if (targetSlimefunItem instanceof EnergyNetProvider && targetSlimefunItem instanceof MachineProcessHolder machineProcessHolder) {
-                            BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(targetSlimefunId), () -> FuelOperator.this.doCharge(machineProcessHolder, location), location);
-                        }
-                    }
+        this.pointFunction(block, 1, location -> {
+            LocationInfo locationInfo = LocationInfo.get(location);
+            if (locationInfo != null && !this.notAllowedId.contains(locationInfo.getId())) {
+                if (locationInfo.getSlimefunItem() instanceof EnergyNetProvider && locationInfo.getSlimefunItem() instanceof MachineProcessHolder machineProcessHolder) {
+                    BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(locationInfo.getId()), () -> FuelOperator.this.doCharge(machineProcessHolder, location), location);
                 }
             }
             return 0;
@@ -101,6 +95,8 @@ public class FuelOperator extends AbstractFaceMachine implements RecipeItem {
 
     @Override
     public void registerDefaultRecipes() {
+        RecipeUtil.registerDescriptiveRecipeWithBorder(FinalTech.getLanguageManager(), this);
+
         for (SlimefunItem slimefunItem : Slimefun.getRegistry().getAllSlimefunItems()) {
             if (!this.notAllowedId.contains(slimefunItem.getId()) && slimefunItem instanceof AbstractEnergyProvider && slimefunItem instanceof MachineProcessHolder) {
                 this.registerDescriptiveRecipe(slimefunItem.getItem());

@@ -8,7 +8,7 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.LocationMachine;
-import io.taraxacum.finaltech.core.item.machine.range.point.face.AbstractFaceMachine;
+import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.slimefun.dto.AdvancedCraft;
 import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.plugin.dto.LocationRecipeRegistry;
@@ -23,6 +23,7 @@ import io.taraxacum.finaltech.util.CargoUtil;
 import io.taraxacum.finaltech.core.helper.SlotSearchOrder;
 import io.taraxacum.finaltech.core.helper.SlotSearchSize;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
+import io.taraxacum.libs.slimefun.util.BlockStorageConfigUtil;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
@@ -79,13 +80,13 @@ public class AdvancedAutoCraft extends AbstractFaceMachine implements RecipeItem
         }
 
         Block containerBlock = block.getRelative(BlockFace.DOWN);
-        if (!BlockStorage.hasBlockInfo(containerBlock) || !BlockStorage.hasInventory(containerBlock)) {
+        Config containerConfig = BlockStorage.getLocationInfo(containerBlock.getLocation());
+        if (BlockStorageConfigUtil.isEmptyConfig(containerConfig) || !BlockStorage.hasInventory(containerBlock)) {
             return;
         }
 
-        Config locationInfo = BlockStorage.getLocationInfo(containerBlock.getLocation());
-        if (locationInfo.contains(ConstantTableUtil.CONFIG_ID)) {
-            String id = locationInfo.getString(ConstantTableUtil.CONFIG_ID);
+        String containerId =containerConfig.getString(ConstantTableUtil.CONFIG_ID);
+        if (containerId != null) {
             Runnable runnable = () -> {
                 InvWithSlots inputMap = CargoUtil.getInvWithSlots(containerBlock, SlotSearchSize.INPUT_HELPER.getOrDefaultValue(config), SlotSearchOrder.VALUE_ASCENT);
                 InvWithSlots outputMap = CargoUtil.getInvWithSlots(containerBlock, SlotSearchSize.OUTPUT_HELPER.getOrDefaultValue(config), SlotSearchOrder.VALUE_ASCENT);
@@ -104,13 +105,13 @@ public class AdvancedAutoCraft extends AbstractFaceMachine implements RecipeItem
                     craft.setMatchCount(Math.min(craft.getMatchCount(), MachineUtil.calMaxMatch(containerMenu.toInventory(), outputSlots, craft.getOutputItemList())));
                     if (craft.getMatchCount() > 0) {
                         craft.consumeItem(containerMenu.toInventory());
-                        for (ItemStack item : craft.calMachineRecipe(0).getOutput()) {
-                            containerMenu.pushItem(ItemStackUtil.cloneItem(item), outputSlots);
+                        for (ItemStack itemStack : craft.calMachineRecipe(0).getOutput()) {
+                            containerMenu.pushItem(itemStack, outputSlots);
                         }
                     }
                 }
             };
-            if (FinalTech.isAsyncSlimefunItem(id)) {
+            if (FinalTech.isAsyncSlimefunItem(containerId)) {
                 FinalTech.getLocationRunnableFactory().waitThenRun(runnable, block.getLocation(), containerBlock.getLocation());
             } else {
                 runnable.run();
@@ -125,6 +126,8 @@ public class AdvancedAutoCraft extends AbstractFaceMachine implements RecipeItem
 
     @Override
     public void registerDefaultRecipes() {
+        RecipeUtil.registerDescriptiveRecipeWithBorder(FinalTech.getLanguageManager(), this);
+
         AdvancedAutoCraftMenu.registerRecipe();
         for (String id : AdvancedAutoCraftMenu.RECIPE_MAP.keySet()) {
             SlimefunItem slimefunItem = SlimefunItem.getById(id);
@@ -144,7 +147,7 @@ public class AdvancedAutoCraft extends AbstractFaceMachine implements RecipeItem
     }
 
     @Override
-    public Location[] getLocation(@Nonnull Location sourceLocation) {
+    public Location[] getLocations(@Nonnull Location sourceLocation) {
         return new Location[] {new Location(sourceLocation.getWorld(), sourceLocation.getX(), sourceLocation.getY() - 1, sourceLocation.getZ())};
     }
 }

@@ -74,7 +74,7 @@ public final class MachineRecipeLock {
                 return true;
             } else {
                 int recipeLock = value == null ? Integer.parseInt(this.defaultValue()) :  Integer.parseInt(value);
-                List<AdvancedMachineRecipe> advancedMachineRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(slimefunItem.getClass());
+                List<AdvancedMachineRecipe> advancedMachineRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(slimefunItem.getId());
                 if (recipeLock >= 0) {
                     recipeLock = recipeLock % advancedMachineRecipeList.size();
                     AdvancedMachineRecipe advancedMachineRecipe = advancedMachineRecipeList.get(recipeLock);

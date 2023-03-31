@@ -3,10 +3,6 @@ package io.taraxacum.finaltech.core.operation;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
 import io.github.thebusybiscuit.slimefun4.utils.itemstack.ItemStackWrapper;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.item.unusable.CopyCard;
-import io.taraxacum.finaltech.core.item.unusable.ItemPhony;
-import io.taraxacum.finaltech.core.item.unusable.Singularity;
-import io.taraxacum.finaltech.core.item.unusable.Spirochete;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
@@ -34,7 +30,7 @@ public class ItemPhonyOperation implements ItemSerializationConstructorOperation
         this.itemAmountCount = item.getAmount();
         this.itemTypeDifficulty = ConstantTableUtil.ITEM_SPIROCHETE_AMOUNT;
         this.itemAmountDifficulty = ConstantTableUtil.ITEM_SINGULARITY_AMOUNT;
-        this.showItem = new CustomItemStack(FinalTechItems.PHONY.getType(), FinalTech.getLanguageString("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getItemId(), "phony", "name"));
+        this.showItem = new CustomItemStack(FinalTechItems.ITEM_PHONY.getItem().getType(), FinalTech.getLanguageString("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getId(), "phony", "name"));
         this.itemTypeList.add(ItemStackWrapper.wrap(item));
     }
 
@@ -51,7 +47,7 @@ public class ItemPhonyOperation implements ItemSerializationConstructorOperation
 
     @Override
     public void updateShowItem() {
-        ItemStackUtil.setLore(this.showItem, FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getItemId(), "phony", "lore"),
+        ItemStackUtil.setLore(this.showItem, FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getId(), "phony", "lore"),
             String.valueOf(this.itemAmountCount),
             String.valueOf(this.itemAmountDifficulty),
             String.valueOf(this.itemTypeCount),
@@ -59,14 +55,14 @@ public class ItemPhonyOperation implements ItemSerializationConstructorOperation
     }
 
     @Override
-    public int addItem(@Nullable ItemStack item) {
-        if (!CopyCard.isValid(item)) {
+    public int addItem(@Nullable ItemStack itemStack) {
+        if (!FinalTechItems.COPY_CARD.verifyItem(itemStack)) {
             return 0;
         }
 
         if (this.itemTypeCount <= this.itemTypeDifficulty) {
             boolean newType = true;
-            ItemStackWrapper itemWrapper = ItemStackWrapper.wrap(item);
+            ItemStackWrapper itemWrapper = ItemStackWrapper.wrap(itemStack);
             for (ItemStackWrapper itemTypeWrapper : this.itemTypeList) {
                 if (ItemStackUtil.isItemSimilar(itemWrapper, itemTypeWrapper)) {
                     newType = false;
@@ -78,10 +74,10 @@ public class ItemPhonyOperation implements ItemSerializationConstructorOperation
                 this.itemTypeList.add(itemWrapper);
             }
         }
-        int amount = Math.min(item.getAmount(), this.itemAmountDifficulty - this.itemAmountCount);
+        int amount = Math.min(itemStack.getAmount(), this.itemAmountDifficulty - this.itemAmountCount);
         this.itemAmountCount += amount;
 
-        item.setAmount(item.getAmount() - amount);
+        itemStack.setAmount(itemStack.getAmount() - amount);
 
         return amount;
     }
@@ -95,13 +91,13 @@ public class ItemPhonyOperation implements ItemSerializationConstructorOperation
     @Override
     public ItemStack getResult() {
         if (this.itemAmountCount >= this.itemAmountDifficulty && this.itemTypeCount >= this.itemTypeDifficulty) {
-            return ItemPhony.newItem(null, null, null);
+            return FinalTechItems.ITEM_PHONY.getValidItem();
         }
         if (this.itemAmountCount >= this.itemAmountDifficulty) {
-            return Singularity.newItem(null, null);
+            return FinalTechItems.SINGULARITY.getValidItem();
         }
         if (this.itemTypeCount >= this.itemTypeDifficulty) {
-            return Spirochete.newItem(null, null);
+            return FinalTechItems.SPIROCHETE.getValidItem();
         }
         return ItemStackUtil.AIR;
     }

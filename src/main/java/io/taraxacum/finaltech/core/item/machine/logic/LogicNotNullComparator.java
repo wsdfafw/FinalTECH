@@ -5,7 +5,7 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import org.bukkit.inventory.ItemStack;
@@ -35,13 +35,13 @@ public class LogicNotNullComparator extends AbstractLogicComparator implements R
     @Nonnull
     @Override
     protected ItemStack resultTrue() {
-        return ItemStackUtil.cloneItem(FinalTechItems.LOGIC_TRUE);
+        return ItemStackUtil.cloneItem(FinalTechItemStacks.LOGIC_TRUE);
     }
 
     @Nonnull
     @Override
     protected ItemStack resultFalse() {
-        return ItemStackUtil.cloneItem(FinalTechItems.LOGIC_FALSE);
+        return ItemStackUtil.cloneItem(FinalTechItemStacks.LOGIC_FALSE);
     }
 
     @Override

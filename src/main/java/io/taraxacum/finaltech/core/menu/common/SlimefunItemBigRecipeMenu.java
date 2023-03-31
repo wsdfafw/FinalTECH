@@ -7,12 +7,13 @@ import io.github.thebusybiscuit.slimefun4.core.attributes.RecipeDisplayItem;
 import io.github.thebusybiscuit.slimefun4.core.guide.GuideHistory;
 import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuide;
 import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuideMode;
-import io.github.thebusybiscuit.slimefun4.implementation.guide.SurvivalSlimefunGuide;
+import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.core.group.CraftItemGroup;
 import io.taraxacum.finaltech.core.group.RecipeItemGroup;
 import io.taraxacum.finaltech.core.group.TypeItemGroup;
 import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.slimefun.util.GuideUtil;
 import me.mrCookieSlime.CSCoreLibPlugin.general.Inventory.ChestMenu;
 import org.bukkit.Sound;
@@ -71,19 +72,19 @@ public class SlimefunItemBigRecipeMenu extends ChestMenu {
             if (action.isShiftClicked()) {
                 SlimefunGuide.openMainMenu(playerProfile, slimefunGuideMode, guideHistory.getMainMenuPage());
             } else {
-                guideHistory.goBack(new SurvivalSlimefunGuide(false, false));
+                guideHistory.goBack(Slimefun.getRegistry().getSlimefunGuide(SlimefunGuideMode.SURVIVAL_MODE));
             }
             return false;
         });
 
-        this.addItem(RECIPE_TYPE, slimefunItem.getRecipeType().toItem());
+        this.addItem(RECIPE_TYPE, ItemStackUtil.cloneWithoutNBT(slimefunItem.getRecipeType().toItem()));
         this.addMenuClickHandler(RECIPE_TYPE, (p, slot, item, action) -> {
             TypeItemGroup typeItemGroup = TypeItemGroup.getByRecipeType(slimefunItem.getRecipeType());
             typeItemGroup.open(player, playerProfile, slimefunGuideMode);
             return false;
         });
 
-        this.addItem(RECIPE_RESULT, slimefunItem.getRecipeOutput());
+        this.addItem(RECIPE_RESULT, ItemStackUtil.cloneWithoutNBT(slimefunItem.getRecipeOutput()));
         this.addMenuClickHandler(RECIPE_RESULT, (p, slot, item, action) -> {
             CraftItemGroup craftItemGroup = CraftItemGroup.getBySlimefunItem(slimefunItem);
             craftItemGroup.open(player, playerProfile, slimefunGuideMode);
@@ -92,7 +93,12 @@ public class SlimefunItemBigRecipeMenu extends ChestMenu {
 
         for (int i = 0; i < slimefunItem.getRecipe().length; i++) {
             ItemStack itemStack = slimefunItem.getRecipe()[i];
-            this.addItem(RECIPE_CONTENT[i], slimefunItem.getRecipe()[i]);
+            ItemStack icon = itemStack;
+            SlimefunItem sfItem = SlimefunItem.getByItem(itemStack);
+            if(sfItem != null && !this.playerProfile.hasUnlocked(sfItem.getResearch())) {
+                icon = ChestMenuUtils.getNotResearchedItem();
+            }
+            this.addItem(RECIPE_CONTENT[i], ItemStackUtil.cloneWithoutNBT(icon));
             this.addMenuClickHandler(RECIPE_CONTENT[i], (p, slot, item, action) -> {
                 RecipeItemGroup recipeItemGroup = RecipeItemGroup.getByItemStack(player, playerProfile, slimefunGuideMode, itemStack);
                 if (recipeItemGroup != null) {
@@ -110,7 +116,7 @@ public class SlimefunItemBigRecipeMenu extends ChestMenu {
             this.addMenuClickHandler(slot, ChestMenuUtils.getEmptyClickHandler());
         }
 
-        if (slimefunItem instanceof RecipeDisplayItem && ((RecipeDisplayItem) slimefunItem).getDisplayRecipes().size() > 0) {
+        if (slimefunItem instanceof RecipeDisplayItem recipeDisplayItem && recipeDisplayItem.getDisplayRecipes().size() > 0) {
             this.addItem(this.WORK_BUTTON, Icon.RECIPE_ICON);
             this.addMenuClickHandler(this.WORK_BUTTON, (p, slot, item, action) -> {
                 ChestMenu chestMenu = this.setupWorkContent(page);
@@ -127,15 +133,15 @@ public class SlimefunItemBigRecipeMenu extends ChestMenu {
 
     @Nullable
     private ChestMenu setupWorkContent(int page) {
-        if (this.slimefunItem instanceof RecipeDisplayItem) {
-            ChestMenu chestMenu = new ChestMenu(slimefunItem.getItemName());
+        if (this.slimefunItem instanceof RecipeDisplayItem recipeDisplayItem) {
+            ChestMenu chestMenu = new ChestMenu(this.slimefunItem.getItemName());
 
             for (int slot : WORK_BORDER) {
                 chestMenu.addItem(slot, ChestMenuUtils.getBackground());
                 chestMenu.addMenuClickHandler(slot, ChestMenuUtils.getEmptyClickHandler());
             }
 
-            List<ItemStack> displayRecipes = ((RecipeDisplayItem) this.slimefunItem).getDisplayRecipes();
+            List<ItemStack> displayRecipes = recipeDisplayItem.getDisplayRecipes();
 
             chestMenu.addItem(WORK_BACK_SLOT, ChestMenuUtils.getBackButton(player));
             chestMenu.addMenuClickHandler(WORK_BACK_SLOT, (p, slot, item, action) -> {
@@ -169,9 +175,15 @@ public class SlimefunItemBigRecipeMenu extends ChestMenu {
             for (i = 0; i < WORK_CONTENT.length; i++) {
                 int index = i + page * WORK_CONTENT.length - WORK_CONTENT.length;
                 if (index < displayRecipes.size()) {
-                    chestMenu.addItem(WORK_CONTENT[i], displayRecipes.get(index));
+                    ItemStack itemStack = displayRecipes.get(index);
+                    ItemStack icon = itemStack;
+                    SlimefunItem slimefunItem = SlimefunItem.getByItem(itemStack);
+                    if(slimefunItem != null && !this.playerProfile.hasUnlocked(slimefunItem.getResearch())) {
+                        icon = ChestMenuUtils.getNotResearchedItem();
+                    }
+                    chestMenu.addItem(WORK_CONTENT[i], ItemStackUtil.cloneWithoutNBT(icon));
                     chestMenu.addMenuClickHandler(WORK_CONTENT[i], (p, slot, item, action) -> {
-                        RecipeItemGroup recipeItemGroup = RecipeItemGroup.getByItemStack(this.player, this.playerProfile, this.slimefunGuideMode, displayRecipes.get(index));
+                        RecipeItemGroup recipeItemGroup = RecipeItemGroup.getByItemStack(this.player, this.playerProfile, this.slimefunGuideMode, itemStack);
                         if (recipeItemGroup != null) {
                             recipeItemGroup.open(player, playerProfile, slimefunGuideMode);
                         }

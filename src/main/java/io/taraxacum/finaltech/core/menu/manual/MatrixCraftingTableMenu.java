@@ -10,6 +10,7 @@ import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.item.machine.manual.MatrixCraftingTable;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
+import io.taraxacum.libs.slimefun.interfaces.SimpleValidItem;
 import io.taraxacum.libs.slimefun.util.SfItemUtil;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
@@ -25,6 +26,10 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Final_ROOT
+ * @since 2.0
+ */
 public class MatrixCraftingTableMenu extends AbstractManualMachineMenu{
     private static final int[] BORDER = new int[] {6, 7, 8, 15, 17, 24, 25, 26};
     private static final int[] INPUT_BORDER = new int[0];
@@ -74,13 +79,13 @@ public class MatrixCraftingTableMenu extends AbstractManualMachineMenu{
     @Override
     public void newInstance(@Nonnull BlockMenu blockMenu, @Nonnull Block block) {
         super.newInstance(blockMenu, block);
-        JavaPlugin javaPlugin = this.getMachine().getAddon().getJavaPlugin();
+        JavaPlugin javaPlugin = this.getSlimefunItem().getAddon().getJavaPlugin();
         blockMenu.addMenuClickHandler(PARSE_SLOT, (player, slot, item, action) -> {
-            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.GLOW, 0, block));
+            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
 
             SlimefunItem slimefunItem;
 
-            List<MachineRecipe> machineRecipeList = MachineRecipeFactory.getInstance().getRecipe(MatrixCraftingTable.class);
+            List<MachineRecipe> machineRecipeList = MachineRecipeFactory.getInstance().getRecipe(this.getID());
             List<SlimefunItem> slimefunItemList = new ArrayList<>(machineRecipeList.size());
             for (MachineRecipe machineRecipe : machineRecipeList) {
                 ItemStack[] output = machineRecipe.getOutput();
@@ -95,12 +100,15 @@ public class MatrixCraftingTableMenu extends AbstractManualMachineMenu{
             BasicCraft basicCraft = BasicCraft.doCraft(slimefunItemList, blockMenu.toInventory(), MatrixCraftingTableMenu.this.getInputSlot());
             if (basicCraft != null) {
                 ItemStack existedItem = blockMenu.getItemInSlot(MatrixCraftingTableMenu.this.getOutputSlot()[0]);
-                if (ItemStackUtil.isItemNull(existedItem) || ItemStackUtil.isItemSimilar(existedItem, basicCraft.getMatchItem().getItem())) {
-                    int amount = action.isRightClicked() || action.isShiftClicked() ? basicCraft.getMatchAmount() : 1;
-                    basicCraft.setMatchAmount(amount);
+                ItemStack outputItemStack = basicCraft.getMatchItem() instanceof SimpleValidItem simpleValidItem ? simpleValidItem.getValidItem() : basicCraft.getMatchItem().getRecipeOutput();
+                if (ItemStackUtil.isItemNull(existedItem) || ItemStackUtil.isItemSimilar(existedItem, outputItemStack)) {
+                    basicCraft.setMatchAmount(action.isRightClicked() || action.isShiftClicked() ? basicCraft.getMatchAmount() : 1);
+                    basicCraft.setMatchAmount(Math.min(basicCraft.getMatchAmount(), outputItemStack.getMaxStackSize() / outputItemStack.getAmount()));
+                    outputItemStack.setAmount(outputItemStack.getAmount() * basicCraft.getMatchAmount());
 
                     basicCraft.consumeItem(blockMenu.toInventory(), MatrixCraftingTableMenu.this.getInputSlot());
-                    blockMenu.pushItem(ItemStackUtil.cloneItem(basicCraft.getMatchItem().getItem(), amount), MatrixCraftingTableMenu.this.getOutputSlot());
+
+                    blockMenu.pushItem(outputItemStack, MatrixCraftingTableMenu.this.getOutputSlot());
                 }
             }
 
@@ -112,7 +120,7 @@ public class MatrixCraftingTableMenu extends AbstractManualMachineMenu{
     public void updateInventory(@Nonnull Inventory inventory, @Nonnull Location location) {
         SlimefunItem slimefunItem;
 
-        List<MachineRecipe> machineRecipeList = MachineRecipeFactory.getInstance().getRecipe(MatrixCraftingTable.class);
+        List<MachineRecipe> machineRecipeList = MachineRecipeFactory.getInstance().getRecipe(this.getID());
         List<SlimefunItem> slimefunItemList = new ArrayList<>(machineRecipeList.size());
         for (MachineRecipe machineRecipe : machineRecipeList) {
             ItemStack[] output = machineRecipe.getOutput();
@@ -128,7 +136,8 @@ public class MatrixCraftingTableMenu extends AbstractManualMachineMenu{
 
         if (basicCraft != null) {
             slimefunItem = basicCraft.getMatchItem();
-            ItemStack matchItem = ItemStackUtil.cloneItem(slimefunItem.getItem());
+            ItemStack matchItem = slimefunItem.getRecipeOutput();
+            SfItemUtil.removeSlimefunId(matchItem);
             ItemStackUtil.addLoresToLast(matchItem, FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("items", SfItemUtil.getIdFormatName(MatrixCraftingTable.class), "show-icon", "lore"), String.valueOf(basicCraft.getMatchAmount())));
             inventory.setItem(PARSE_SLOT, matchItem);
         } else {

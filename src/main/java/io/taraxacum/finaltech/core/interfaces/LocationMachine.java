@@ -18,5 +18,5 @@ public interface LocationMachine {
      * @param sourceLocation
      * @return
      */
-    Location[] getLocation(@Nonnull Location sourceLocation);
+    Location[] getLocations(@Nonnull Location sourceLocation);
 }

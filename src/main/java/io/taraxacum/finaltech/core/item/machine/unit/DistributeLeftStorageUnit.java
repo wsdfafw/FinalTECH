@@ -17,6 +17,7 @@ import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -25,7 +26,7 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  * @since 2.0
  */
-public class DistributeLeftStorageUnit extends AbstractCargo implements RecipeItem {
+public class DistributeLeftStorageUnit extends AbstractStorageUnit implements RecipeItem {
     public DistributeLeftStorageUnit(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
     }
@@ -39,6 +40,7 @@ public class DistributeLeftStorageUnit extends AbstractCargo implements RecipeIt
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
         BlockMenu blockMenu = BlockStorage.getInventory(block);
+        Inventory inventory = blockMenu.toInventory();
         int beginSlot = 0;
         int endSlot = 0;
         int i;
@@ -60,14 +62,13 @@ public class DistributeLeftStorageUnit extends AbstractCargo implements RecipeIt
             } else {
                 int amount = itemAmountWrapper.getAmount() / (beginSlot + 1 - endSlot);
                 if (amount > 0) {
+                    ItemStack itemStack = ItemStackUtil.cloneItem(itemAmountWrapper.getItemStack());
                     for (int j = beginSlot - 1; j >= endSlot; j--) {
-                        ItemStack item = ItemStackUtil.cloneItem(itemAmountWrapper.getItemStack());
-                        item.setAmount(amount);
-                        blockMenu.replaceExistingItem(j, item);
+                        itemStack.setAmount(amount);
+                        inventory.setItem(j, itemStack);
                     }
-                    ItemStack item = ItemStackUtil.cloneItem(itemAmountWrapper.getItemStack());
-                    item.setAmount(amount + (itemAmountWrapper.getAmount() % (beginSlot + 1 - endSlot)));
-                    blockMenu.replaceExistingItem(beginSlot, item);
+                    itemStack.setAmount(amount + (itemAmountWrapper.getAmount() % (beginSlot + 1 - endSlot)));
+                    inventory.setItem(beginSlot, itemStack);
                 }
                 itemAmountWrapper = new ItemAmountWrapper(blockMenu.getItemInSlot(i));
                 beginSlot = i;
@@ -77,20 +78,20 @@ public class DistributeLeftStorageUnit extends AbstractCargo implements RecipeIt
         if (beginSlot != endSlot) {
             int amount = itemAmountWrapper.getAmount() / (beginSlot + 1 - endSlot);
             if (amount > 0) {
+                ItemStack itemStack = ItemStackUtil.cloneItem(itemAmountWrapper.getItemStack());
                 for (int j = beginSlot - 1; j >= endSlot; j--) {
-                    ItemStack item = ItemStackUtil.cloneItem(itemAmountWrapper.getItemStack());
-                    item.setAmount(amount);
-                    blockMenu.replaceExistingItem(j, item);
+                    itemStack.setAmount(amount);
+                    inventory.setItem(j, itemStack);
                 }
-                ItemStack item = ItemStackUtil.cloneItem(itemAmountWrapper.getItemStack());
-                item.setAmount(amount + itemAmountWrapper.getAmount() % (beginSlot + 1 - endSlot));
-                blockMenu.replaceExistingItem(beginSlot, item);
+                itemStack.setAmount(amount + itemAmountWrapper.getAmount() % (beginSlot + 1 - endSlot));
+                inventory.setItem(beginSlot, itemStack);
             }
         }
     }
 
     @Override
     public void registerDefaultRecipes() {
-        RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this, String.valueOf(MachineUtil.calMachineSlotSize(this)));
+        RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
+                String.valueOf(MachineUtil.calMachineSlotSize(this)));
     }
 }

@@ -2,6 +2,7 @@ package io.taraxacum.finaltech.core.helper;
 
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
+import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.libs.plugin.dto.KeyValueStringHelper;
 import io.taraxacum.libs.plugin.dto.KeyValueStringOrderHelper;
@@ -301,7 +302,7 @@ public class PositionInfo {
     }
     @Nonnull
     public static BlockFace[] getBlockFaces(@Nonnull Config config, @Nonnull String... values) {
-        String string = config.getString(KEY);
+        String string = JavaUtil.getFirstNotNull(config.getString(KEY), "");
         return PositionInfo.getBlockFaces(string, values);
     }
 }

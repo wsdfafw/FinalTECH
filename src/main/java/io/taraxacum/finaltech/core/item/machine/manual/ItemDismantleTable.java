@@ -6,15 +6,18 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
+import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.common.util.StringNumberUtil;
+import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.menu.manual.AbstractManualMachineMenu;
+import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.slimefun.dto.RecipeTypeRegistry;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.machine.ItemDismantleTableMenu;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
-import io.taraxacum.libs.slimefun.util.SfItemUtil;
+import io.taraxacum.libs.slimefun.interfaces.ValidItem;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
@@ -29,12 +32,13 @@ import java.util.*;
  * @since 2.0
  */
 public class ItemDismantleTable extends AbstractManualMachine implements RecipeItem {
-    public static final Set<String> ALLOWED_RECIPE_TYPE = new HashSet<>(ConfigUtil.getItemStringList(SfItemUtil.getIdFormatName(ItemDismantleTable.class), "allowed-recipe-type"));
-    public static final Set<String> NOT_ALLOWED_ID = new HashSet<>(ConfigUtil.getItemStringList(SfItemUtil.getIdFormatName(ItemDismantleTable.class), "not-allowed-id"));
+    private final Set<String> allowedRecipeType = new HashSet<>(ConfigUtil.getItemStringList(this, "allowed-recipe-type"));
+    private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
+    private final Set<String> allowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "allowed-id"));
 
-    public static final String KEY = "c";
-    public static final String COUNT = ConfigUtil.getOrDefaultItemSetting("600", SfItemUtil.getIdFormatName(ItemDismantleTable.class), "count");
-    public static final String LIMIT = ConfigUtil.getOrDefaultItemSetting("900", SfItemUtil.getIdFormatName(ItemDismantleTable.class), "limit");
+    private final String key = "c";
+    private final String count = ConfigUtil.getOrDefaultItemSetting("600", this, "count");
+    private final String limit = ConfigUtil.getOrDefaultItemSetting("900", this, "limit");
 
     public ItemDismantleTable(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -60,9 +64,9 @@ public class ItemDismantleTable extends AbstractManualMachine implements RecipeI
 
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        String count = config.contains(KEY) ? config.getString(KEY) : StringNumberUtil.ZERO;
-        if(StringNumberUtil.compare(count, LIMIT) < 0) {
-            config.setValue(KEY, StringNumberUtil.add(count));
+        String count = JavaUtil.getFirstNotNull(config.getString(key), StringNumberUtil.ZERO);
+        if(StringNumberUtil.compare(count, limit) < 0) {
+            config.setValue(key, StringNumberUtil.add(count));
         }
 
         BlockMenu blockMenu = BlockStorage.getInventory(block);
@@ -80,11 +84,71 @@ public class ItemDismantleTable extends AbstractManualMachine implements RecipeI
     public void registerDefaultRecipes() {
         RecipeTypeRegistry.getInstance().reload();
 
-        for (String id : ALLOWED_RECIPE_TYPE) {
+        RecipeUtil.registerDescriptiveRecipeWithBorder(FinalTech.getLanguageManager(), this);
+
+        for (String id : this.allowedRecipeType) {
             RecipeType recipeType = RecipeTypeRegistry.getInstance().getRecipeTypeById(id);
             if (recipeType != null && !ItemStackUtil.isItemNull(recipeType.toItem())) {
                 this.registerDescriptiveRecipe(recipeType.toItem());
             }
         }
+    }
+
+    public boolean calAllowed(@Nonnull SlimefunItem slimefunItem) {
+        if (this.allowedId.contains(slimefunItem.getId())) {
+            return true;
+        } else if (this.notAllowedId.contains(slimefunItem.getId())) {
+            return false;
+        } else {
+            String slimefunItemId = slimefunItem.getId();
+            synchronized (this) {
+                if (this.allowedId.contains(slimefunItemId)) {
+                    return true;
+                } else if (this.notAllowedId.contains(slimefunItemId)) {
+                    return false;
+                }
+
+                if (!this.allowedRecipeType.contains(slimefunItem.getRecipeType().getKey().getKey())) {
+                    this.notAllowedId.add(slimefunItemId);
+                    return false;
+                }
+
+                if (slimefunItem.getRecipe().length > this.getOutputSlot().length) {
+                    this.notAllowedId.add(slimefunItemId);
+                    return false;
+                }
+
+                boolean hasRecipe = false;
+                for (ItemStack itemStack : slimefunItem.getRecipe()) {
+                    if (ItemStackUtil.isItemNull(itemStack)) {
+                        continue;
+                    }
+                    hasRecipe = true;
+                    SlimefunItem sfItem = SlimefunItem.getByItem(itemStack);
+                    if (sfItem == null && !ItemStackUtil.isItemSimilar(itemStack, new ItemStack(itemStack.getType()))) {
+                        this.notAllowedId.add(slimefunItemId);
+                        return false;
+                    } else if(sfItem instanceof ValidItem) {
+                        this.notAllowedId.add(slimefunItemId);
+                        return false;
+                    }
+                }
+                if (!hasRecipe) {
+                    this.notAllowedId.add(slimefunItemId);
+                    return false;
+                }
+
+                this.allowedId.add(slimefunItemId);
+                return true;
+            }
+        }
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getCount() {
+        return count;
     }
 }

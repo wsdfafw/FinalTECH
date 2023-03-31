@@ -6,15 +6,13 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import org.bukkit.inventory.ItemStack;
 
-import javax.annotation.Nonnull;
-
 /**
  * @author Final_ROOT
  * @since 2.0
  */
 public class CarbonadoExpandedCapacitor extends AbstractExpandedElectricCapacitor {
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(65536, this, "capacity");
-    private final int stack = ConfigUtil.getOrDefaultItemSetting(65536, this, "stack");
+    private final int stack = ConfigUtil.getOrDefaultItemSetting(65536, this, "max-stack");
 
     public CarbonadoExpandedCapacitor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -25,9 +23,8 @@ public class CarbonadoExpandedCapacitor extends AbstractExpandedElectricCapacito
         return this.capacity * 2;
     }
 
-    @Nonnull
     @Override
-    public String getMaxStack() {
-        return String.valueOf(this.stack - 2);
+    public int getMaxStack() {
+        return this.stack - 2;
     }
 }

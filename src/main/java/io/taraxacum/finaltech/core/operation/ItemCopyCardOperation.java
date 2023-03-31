@@ -2,9 +2,6 @@ package io.taraxacum.finaltech.core.operation;
 
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.item.machine.operation.ItemSerializationConstructor;
-import io.taraxacum.finaltech.core.item.unusable.CopyCard;
-import io.taraxacum.finaltech.core.item.unusable.ItemPhony;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
@@ -32,8 +29,8 @@ public class ItemCopyCardOperation implements ItemSerializationConstructorOperat
         this.matchItem = item.clone();
         this.matchItem.setAmount(1);
         this.matchItemWrapper = new ItemWrapper(this.matchItem);
-        this.copyCardItem = CopyCard.newItem(this.matchItem, "1");
-        this.showItem = new CustomItemStack(item.getType(), FinalTech.getLanguageString("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getItemId(), "copy-card", "name"));
+        this.copyCardItem = FinalTechItems.COPY_CARD.getValidItem(this.matchItem, "1");
+        this.showItem = new CustomItemStack(item.getType(), FinalTech.getLanguageString("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getId(), "copy-card", "name"));
         this.updateShowItem();
     }
 
@@ -63,36 +60,36 @@ public class ItemCopyCardOperation implements ItemSerializationConstructorOperat
 
     @Override
     public void updateShowItem() {
-        ItemStackUtil.setLore(this.showItem, FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getItemId(), "copy-card", "lore"),
+        ItemStackUtil.setLore(this.showItem, FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getId(), "copy-card", "lore"),
                 ItemStackUtil.getItemName(this.matchItem),
                 String.format("%.8f", this.count),
                 String.valueOf(this.difficulty),
-                String.valueOf(ItemSerializationConstructor.EFFICIENCY > 0 ? 1 / ItemSerializationConstructor.EFFICIENCY : "INFINITY")));
+                String.valueOf(FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getEfficiency() > 0 ? 1 / FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getEfficiency() : "INFINITY")));
     }
 
     @Override
-    public int addItem(@Nullable ItemStack item) {
+    public int addItem(@Nullable ItemStack itemStack) {
         if (!this.isFinished()) {
-            if (ItemStackUtil.isItemSimilar(item, this.matchItemWrapper)) {
-                double efficiency = ItemSerializationConstructor.EFFICIENCY;
+            if (ItemStackUtil.isItemSimilar(itemStack, this.matchItemWrapper)) {
+                double efficiency = FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getEfficiency();
                 efficiency = Math.min(efficiency, 1);
                 if(efficiency <= 0) {
                     return 0;
                 }
-                if (item.getAmount() * efficiency + this.count < this.difficulty) {
-                    int amount = item.getAmount();
-                    item.setAmount(item.getAmount() - amount);
+                if (itemStack.getAmount() * efficiency + this.count < this.difficulty) {
+                    int amount = itemStack.getAmount();
+                    itemStack.setAmount(itemStack.getAmount() - amount);
                     this.count += amount * efficiency;
                     return amount;
                 } else {
                     int amount = (int) Math.ceil((this.difficulty - this.count) / efficiency);
-                    item.setAmount(item.getAmount() - amount);
+                    itemStack.setAmount(itemStack.getAmount() - amount);
                     this.count = this.difficulty;
                     return amount;
                 }
-            } else if (ItemPhony.isValid(item)) {
-                double amount = Math.min(item.getAmount(), this.difficulty - this.count);
-                item.setAmount(item.getAmount() - (int) Math.ceil(amount));
+            } else if (FinalTechItems.ITEM_PHONY.verifyItem(itemStack)) {
+                double amount = Math.min(itemStack.getAmount(), this.difficulty - this.count);
+                itemStack.setAmount(itemStack.getAmount() - (int) Math.ceil(amount));
                 this.count += amount;
                 return (int) Math.ceil(amount);
             }
@@ -114,6 +111,7 @@ public class ItemCopyCardOperation implements ItemSerializationConstructorOperat
     @Deprecated
     @Override
     public void addProgress(int i) {
+
     }
 
     @Deprecated

@@ -9,14 +9,13 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
+import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import io.taraxacum.libs.slimefun.dto.LocationWithConfig;
+import io.taraxacum.libs.slimefun.dto.LocationInfo;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.item.unusable.ItemPhony;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.unit.StatusL2Menu;
 import io.taraxacum.finaltech.util.MachineUtil;
@@ -32,6 +31,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * @author Final_ROOT
@@ -39,14 +39,16 @@ import java.util.*;
  */
 public class MatrixAccelerator extends AbstractCubeMachine implements RecipeItem, MenuUpdater {
     private final int range = ConfigUtil.getOrDefaultItemSetting(1, this, "range");
+    private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
+    private final boolean safeMode = ConfigUtil.getOrDefaultItemSetting(true, this, "safe-mode");
     // System.nanoTime
     // 1,000,000ns = 1ms
     private final int syncThreshold = ConfigUtil.getOrDefaultItemSetting(300000, this, "threshold-sync");
     private final int asyncThreshold = ConfigUtil.getOrDefaultItemSetting(1600000, this, "threshold-async");
-    private final Set<String> invalidIdSet = new HashSet<>(ConfigUtil.getItemStringList(this, "invalid-ids"));
 
     public MatrixAccelerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+        this.notAllowedId.add(this.getId());
     }
 
     @Nonnull
@@ -72,17 +74,15 @@ public class MatrixAccelerator extends AbstractCubeMachine implements RecipeItem
         Location blockLocation = block.getLocation();
         BlockMenu blockMenu = BlockStorage.getInventory(blockLocation);
         boolean hasViewer = blockMenu.hasViewer();
-        JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
 
         int accelerate = 0;
         int range = this.range;
 
-        SlimefunItem machineItem = null;
         String machineId = null;
 
         // parse item
         ItemStack matchItem = blockMenu.getItemInSlot(this.getInputSlot()[0]);
-        if (ItemPhony.isValid(matchItem)) {
+        if (FinalTechItems.ITEM_PHONY.verifyItem(matchItem)) {
             int amount = matchItem.getAmount();
             for (int i = 2, j = amount; j > 0; j /= i) {
                 accelerate++;
@@ -91,11 +91,11 @@ public class MatrixAccelerator extends AbstractCubeMachine implements RecipeItem
                 range++;
             }
         } else {
-            machineItem = SlimefunItem.getByItem(matchItem);
-            if (machineItem == null || this.invalidIdSet.contains(machineItem.getId()) || machineItem.getBlockTicker() == null) {
+            SlimefunItem machineItem = SlimefunItem.getByItem(matchItem);
+            if (machineItem == null || this.notAllowedId.contains(machineItem.getId()) || machineItem.getBlockTicker() == null) {
                 if(hasViewer) {
                     this.updateMenu(blockMenu, StatusL2Menu.STATUS_SLOT, this,
-                            "0", "0");
+                            "0", "0", "0");
                 }
                 return;
             }
@@ -104,150 +104,71 @@ public class MatrixAccelerator extends AbstractCubeMachine implements RecipeItem
         }
 
         // search around block
-        Map<Integer, List<LocationWithConfig>> machineConfigMap = new HashMap<>(range * 3);
-        if (machineId == null) {
-            int count = this.function(block, range, location -> {
-                if (BlockStorage.hasBlockInfo(location)) {
-                    Config machineConfig = BlockStorage.getLocationInfo(location);
-                    if (machineConfig.contains(ConstantTableUtil.CONFIG_ID) && !MatrixAccelerator.this.invalidIdSet.contains(machineConfig.getString(ConstantTableUtil.CONFIG_ID))) {
-                        int distance = Math.abs(location.getBlockX() - blockLocation.getBlockX()) + Math.abs(location.getBlockY() - blockLocation.getBlockY()) + Math.abs(location.getBlockZ() - blockLocation.getBlockZ());
-                        List<LocationWithConfig> machineConfigList = machineConfigMap.computeIfAbsent(distance, d -> new ArrayList<>(d * d * 4 + 2));
-                        machineConfigList.add(new LocationWithConfig(location.clone(), machineConfig));
-                        return 1;
-                    }
-                }
-                return 0;
-            });
-            if (count <= 1) {
-                if(hasViewer) {
-                    this.updateMenu(blockMenu, StatusL2Menu.STATUS_SLOT, this,
-                            "0", "0");
-                }
-                return;
+        Map<Integer, List<LocationInfo>> locationInfoMap = new HashMap<>(range * 3);
+
+        final String finalMachineId = machineId;
+        Function<String, Boolean> availableIdFunction = machineId == null ? id -> !MatrixAccelerator.this.notAllowedId.contains(id) : finalMachineId::equals;
+        int count = this.cubeFunction(block, range, location -> {
+            LocationInfo locationInfo = LocationInfo.get(location);
+            if (locationInfo != null && availableIdFunction.apply(locationInfo.getId()) && locationInfo.getSlimefunItem().getBlockTicker() != null) {
+                int distance = Math.abs(location.getBlockX() - blockLocation.getBlockX()) + Math.abs(location.getBlockY() - blockLocation.getBlockY()) + Math.abs(location.getBlockZ() - blockLocation.getBlockZ());
+                locationInfoMap.computeIfAbsent(distance, d -> new ArrayList<>(d * d * 4 + 2)).add(locationInfo);
+                locationInfo.cloneLocation();
+                return 1;
             }
-        } else {
-            final String finalMachineId = machineId;
-            int count = this.function(block, range, location -> {
-                if (BlockStorage.hasBlockInfo(location)) {
-                    Config machineConfig = BlockStorage.getLocationInfo(location);
-                    if (machineConfig.contains(ConstantTableUtil.CONFIG_ID) && finalMachineId.equals(machineConfig.getString(ConstantTableUtil.CONFIG_ID))) {
-                        int distance = Math.abs(location.getBlockX() - blockLocation.getBlockX()) + Math.abs(location.getBlockY() - blockLocation.getBlockY()) + Math.abs(location.getBlockZ() - blockLocation.getBlockZ());
-                        List<LocationWithConfig> machineConfigList = machineConfigMap.computeIfAbsent(distance, d -> new ArrayList<>(d * d * 4 + 2));
-                        machineConfigList.add(new LocationWithConfig(location.clone(), machineConfig));
-                        return 1;
-                    }
-                }
-                return 0;
-            });
-            if (count == 0) {
-                if(hasViewer) {
-                    this.updateMenu(blockMenu, StatusL2Menu.STATUS_SLOT, this,
-                            "0", "0");
-                }
-                return;
+            return 0;
+        });
+
+        if (count == 0) {
+            if(hasViewer) {
+                this.updateMenu(blockMenu, StatusL2Menu.STATUS_SLOT, this,
+                        "0", "0", "0");
             }
-            accelerate /= count;
+            return;
         }
+
 
         int accelerateTimeCount = 0;
         int accelerateMachineCount = 0;
 
-        // do accelerate
-        if (machineId == null) {
-            List<LocationWithConfig> locationConfigList;
-            for (int distance = 1; distance <= range * 3; distance++) {
-                locationConfigList = machineConfigMap.get(distance);
-                if (locationConfigList != null) {
-                    Collections.shuffle(locationConfigList);
-                    for (LocationWithConfig locationConfig : locationConfigList) {
-                        Config machineConfig = locationConfig.getConfig();
-                        Location machineLocation = locationConfig.getLocation();
-                        final String finalMachineId = machineConfig.getString(ConstantTableUtil.CONFIG_ID);
-                        if (finalMachineId == null || this.invalidIdSet.contains(finalMachineId)) {
-                            continue;
-                        }
-                        final SlimefunItem finalMachineItem = SlimefunItem.getById(finalMachineId);
-                        if (finalMachineItem == null || finalMachineItem.getBlockTicker() == null) {
-                            continue;
-                        }
-                        BlockTicker blockTicker = finalMachineItem.getBlockTicker();
-                        final int finalAccelerate = accelerate;
-                        if (blockTicker.isSynchronized()) {
-                            javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
-                                for (int i = 0; i < finalAccelerate; i++) {
-                                    long testTime = JavaUtil.testTime(() -> blockTicker.tick(machineLocation.getBlock(), finalMachineItem, machineConfig));
-                                    if (testTime > MatrixAccelerator.this.syncThreshold) {
-                                        FinalTech.logger().warning(this.getId() + " cost " + testTime + "ns to run blockTicker for " + finalMachineId);
-                                        MatrixAccelerator.this.invalidIdSet.add(finalMachineId);
-                                        break;
-                                    }
+        JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
+        final int finalAccelerate = machineId != null ? accelerate /= count : accelerate;
+        List<LocationInfo> locationInfoList;
+        for (int distance = 1; distance <= range * 3; distance++) {
+            locationInfoList = locationInfoMap.get(distance);
+            if (locationInfoList != null) {
+                Collections.shuffle(locationInfoList);
+                for (LocationInfo locationInfo : locationInfoList) {
+                    BlockTicker blockTicker = locationInfo.getSlimefunItem().getBlockTicker();
+                    if (blockTicker.isSynchronized()) {
+                        javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
+                            for (int i = 0; i < finalAccelerate; i++) {
+                                long testTime = JavaUtil.testTime(() -> blockTicker.tick(locationInfo.getLocation().getBlock(), locationInfo.getSlimefunItem(), locationInfo.getConfig()));
+                                if (this.safeMode && testTime > MatrixAccelerator.this.syncThreshold) {
+                                    FinalTech.logger().warning(this.getId() + " cost " + testTime + "ns to run blockTicker for " + locationInfo.getId());
+                                    MatrixAccelerator.this.notAllowedId.add(locationInfo.getId());
+                                    break;
                                 }
-                            });
-                        } else {
-                            BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(finalMachineId), () -> {
-                                for (int i = 0; i < finalAccelerate; i++) {
-                                    long testTime = JavaUtil.testTime(() -> blockTicker.tick(machineLocation.getBlock(), finalMachineItem, machineConfig));
-                                    if (testTime > MatrixAccelerator.this.asyncThreshold) {
-                                        FinalTech.logger().warning(this.getId() + " cost " + testTime + "ns to run blockTicker for " + finalMachineId);
-                                        MatrixAccelerator.this.invalidIdSet.add(finalMachineId);
-                                        break;
-                                    }
+                            }
+                        });
+                    } else if(!this.safeMode || FinalTech.isAsyncSlimefunItem(locationInfo.getId()) == FinalTech.isAsyncSlimefunItem(this.getId())) {
+                        BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(locationInfo.getId()), () -> {
+                            for (int i = 0; i < finalAccelerate; i++) {
+                                long testTime = JavaUtil.testTime(() -> blockTicker.tick(locationInfo.getLocation().getBlock(), locationInfo.getSlimefunItem(), locationInfo.getConfig()));
+                                if (this.safeMode && testTime > MatrixAccelerator.this.asyncThreshold) {
+                                    FinalTech.logger().warning(this.getId() + " cost " + testTime + "ns to run blockTicker for " + locationInfo.getId());
+                                    MatrixAccelerator.this.notAllowedId.add(locationInfo.getId());
+                                    break;
                                 }
-                            }, machineLocation);
-                        }
-                        if (hasViewer) {
-                            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.GLOW, 0, locationConfig.getLocation().getBlock()));
-                        }
-                        accelerateTimeCount += accelerate;
-                        accelerateMachineCount++;
+                            }
+                        }, locationInfo.getLocation());
                     }
-                }
-            }
-        } else {
-            BlockTicker blockTicker = machineItem.getBlockTicker();
-            final SlimefunItem finalMachineItem = machineItem;
-            final String finalMachineId = machineId;
-            List<LocationWithConfig> locationConfigList;
-            for (int distance = 1; distance <= range * 3; distance++) {
-                locationConfigList = machineConfigMap.get(distance);
-                if (locationConfigList != null) {
-                    Collections.shuffle(locationConfigList);
-                    for (LocationWithConfig locationConfig : locationConfigList) {
-                        Config machineConfig = locationConfig.getConfig();
-                        Location machineLocation = locationConfig.getLocation();
-                        if (!machineId.equals(machineConfig.getString(ConstantTableUtil.CONFIG_ID))) {
-                            continue;
-                        }
-                        final int finalAccelerate = accelerate;
-                        if (blockTicker.isSynchronized()) {
-                            javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
-                                for (int i = 0; i < finalAccelerate; i++) {
-                                    long testTime = JavaUtil.testTime(() -> blockTicker.tick(machineLocation.getBlock(), finalMachineItem, machineConfig));
-                                    if (testTime > MatrixAccelerator.this.syncThreshold) {
-                                        FinalTech.logger().warning(this.getId() + " cost " + testTime + "ns to run blockTicker for " + finalMachineId);
-                                        MatrixAccelerator.this.invalidIdSet.add(finalMachineId);
-                                        break;
-                                    }
-                                }
-                            });
-                        } else {
-                            BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(finalMachineId), () -> {
-                                for (int i = 0; i < finalAccelerate; i++) {
-                                    long testTime = JavaUtil.testTime(() -> blockTicker.tick(machineLocation.getBlock(), finalMachineItem, machineConfig));
-                                    if (testTime > MatrixAccelerator.this.asyncThreshold) {
-                                        FinalTech.logger().warning(this.getId() + " cost " + testTime + "ns to run blockTicker for " + finalMachineId);
-                                        MatrixAccelerator.this.invalidIdSet.add(finalMachineId);
-                                        break;
-                                    }
-                                }
-                            }, machineLocation);
-                        }
-                        if (hasViewer) {
-                            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.GLOW, 0, locationConfig.getLocation().getBlock()));
-                        }
-                        accelerateTimeCount += accelerate;
-                        accelerateMachineCount++;
+
+                    if (hasViewer) {
+                        javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, locationInfo.getLocation().getBlock()));
                     }
+                    accelerateTimeCount += accelerate;
+                    accelerateMachineCount++;
                 }
             }
         }
@@ -255,7 +176,8 @@ public class MatrixAccelerator extends AbstractCubeMachine implements RecipeItem
         if(hasViewer) {
             this.updateMenu(blockMenu, StatusL2Menu.STATUS_SLOT, this,
                     String.valueOf(range),
-                    String.valueOf(accelerateTimeCount), String.valueOf(accelerateMachineCount));
+                    String.valueOf(accelerateTimeCount),
+                    String.valueOf(accelerateMachineCount));
         }
     }
 
@@ -268,5 +190,11 @@ public class MatrixAccelerator extends AbstractCubeMachine implements RecipeItem
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
                 String.valueOf(this.range));
+    }
+
+    @Override
+    public Location[] getLocations(@Nonnull Location sourceLocation) {
+        // TODO
+        return new Location[0];
     }
 }

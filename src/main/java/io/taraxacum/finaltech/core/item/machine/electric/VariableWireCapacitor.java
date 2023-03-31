@@ -4,8 +4,6 @@ import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
-import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
-import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponentType;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.util.StringNumberUtil;
@@ -14,8 +12,8 @@ import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
-import io.taraxacum.finaltech.setup.FinalTechItems;
-import io.taraxacum.finaltech.util.MachineUtil;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
+import io.taraxacum.finaltech.util.BlockTickerUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
@@ -52,18 +50,22 @@ public class VariableWireCapacitor extends AbstractElectricMachine implements Re
         Location location = block.getLocation();
         String charge = EnergyUtil.getCharge(location);
         if (StringNumberUtil.ZERO.equals(charge)) {
-            BlockStorage.clearBlockInfo(location);
             JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-            javaPlugin.getServer().getScheduler().runTaskLater(javaPlugin, () -> {
-                if(location.getBlock().getType().equals(VariableWireCapacitor.this.getItem().getType()) && BlockStorage.getLocationInfo(location, ConstantTableUtil.CONFIG_ID) == null) {
-                    block.setType(FinalTechItems.VARIABLE_WIRE_RESISTANCE.getType());
-                    BlockStorage.addBlockInfo(location, ConstantTableUtil.CONFIG_ID, FinalTechItems.VARIABLE_WIRE_RESISTANCE.getItemId(), true);
-//                    Slimefun.getBlockDataService().setBlockData(block, FinalTechItems.VARIABLE_WIRE_RESISTANCE.getItemId());
-                }
-            }, Slimefun.getTickerTask().getTickRate() + 1);
+            Runnable runnable = () -> {
+                BlockStorage.deleteLocationInfoUnsafely(location, true);
+                BlockStorage.addBlockInfo(location, ConstantTableUtil.CONFIG_ID, FinalTechItemStacks.VARIABLE_WIRE_RESISTANCE.getItemId(), true);
+                Slimefun.getNetworkManager().updateAllNetworks(location);
+                javaPlugin.getServer().getScheduler().runTaskLater(javaPlugin, () -> {
+                    if(!location.getBlock().getType().isAir() && FinalTechItemStacks.VARIABLE_WIRE_RESISTANCE.getItemId().equals(BlockStorage.getLocationInfo(location, ConstantTableUtil.CONFIG_ID))) {
+                        block.setType(FinalTechItemStacks.VARIABLE_WIRE_RESISTANCE.getType());
+                    }
+                }, 0);
+            };
+
+            javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(this.getId()), runnable, location));
         } else {
             BlockMenu blockMenu = BlockStorage.getInventory(location);
-            if(blockMenu.hasViewer()) {
+            if (blockMenu.hasViewer()) {
                 this.updateMenu(blockMenu, StatusMenu.STATUS_SLOT, this, charge);
             }
         }

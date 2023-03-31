@@ -6,11 +6,13 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
+import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.interfaces.DigitalItem;
-import io.taraxacum.finaltech.core.item.unusable.digital.AbstractDigitalNumber;
+import io.taraxacum.finaltech.core.item.unusable.DigitalNumber;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.DigitAdderMenu;
+import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
@@ -63,22 +65,21 @@ public class DigitAdder extends AbstractMachine implements RecipeItem {
             if (ItemStackUtil.isItemNull(itemStack)) {
                 return;
             }
-            SlimefunItem digitalItem = SlimefunItem.getByItem(itemStack);
-            if (digitalItem instanceof DigitalItem) {
-                digit += ((DigitalItem) digitalItem).getDigit();
+            if (SlimefunItem.getByItem(itemStack) instanceof DigitalItem digitalItem) {
+                digit += digitalItem.getDigit();
             } else {
                 return;
             }
         }
         if (digit > 15) {
-            itemStack = AbstractDigitalNumber.INTEGER_ITEM_STACK_MAP.get(digit / 16);
-            if (itemStack != null) {
-                inventory.setItem(this.getOutputSlot()[0], itemStack);
+            SlimefunItem digitItem = DigitalNumber.getByDigit(digit / 16);
+            if (digitItem != null) {
+                inventory.setItem(this.getOutputSlot()[0], digitItem.getItem());
             }
         }
-        itemStack = AbstractDigitalNumber.INTEGER_ITEM_STACK_MAP.get(digit % 16);
-        if (itemStack != null) {
-            inventory.setItem(this.getOutputSlot()[1], itemStack);
+        SlimefunItem digitItem = DigitalNumber.getByDigit(digit % 16);
+        if (digitItem != null) {
+            inventory.setItem(this.getOutputSlot()[1], digitItem.getItem());
         }
         for (int slot : this.getInputSlot()) {
             itemStack = inventory.getItem(slot);
@@ -96,8 +97,10 @@ public class DigitAdder extends AbstractMachine implements RecipeItem {
 
     @Override
     public void registerDefaultRecipes() {
-        for (ItemStack itemStack : AbstractDigitalNumber.INTEGER_ITEM_STACK_MAP.values()) {
-            this.registerRecipe(itemStack, ItemStackUtil.AIR);
+        RecipeUtil.registerDescriptiveRecipeWithBorder(FinalTech.getLanguageManager(), this);
+
+        for (SlimefunItem slimefunItem : DigitalNumber.getAll()) {
+            this.registerRecipe(slimefunItem.getItem(), ItemStackUtil.AIR);
         }
     }
 }

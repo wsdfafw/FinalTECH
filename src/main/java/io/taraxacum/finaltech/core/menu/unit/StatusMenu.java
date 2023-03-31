@@ -1,7 +1,7 @@
 package io.taraxacum.finaltech.core.menu.unit;
 
+import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
-import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.helper.Icon;
 import org.bukkit.Location;
@@ -21,8 +21,8 @@ public class StatusMenu extends AbstractMachineMenu {
     private static final int[] OUTPUT_SLOT = new int[0];
     public static final int STATUS_SLOT = 4;
 
-    public StatusMenu(@Nonnull AbstractMachine machine) {
-        super(machine);
+    public StatusMenu(@Nonnull SlimefunItem slimefunItem) {
+        super(slimefunItem);
     }
 
     @Override

@@ -1,9 +1,9 @@
 package io.taraxacum.finaltech.core.menu.machine;
 
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
-import io.taraxacum.finaltech.core.item.unusable.ItemPhony;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.core.helper.Icon;
@@ -29,11 +29,11 @@ public class MatrixReactorMenu extends AbstractMachineMenu {
     private static final int[] OUTPUT_SLOT = new int[] {40};
 
     private static final int ORDERED_DUST_SLOT = 1;
-    private static final ItemStack ORDERED_DUST_ICON = ItemStackUtil.cloneItem(FinalTechItems.UNORDERED_DUST);
+    private static final ItemStack ORDERED_DUST_ICON = ItemStackUtil.cloneItem(FinalTechItemStacks.UNORDERED_DUST);
     public static final int[] ORDERED_DUST_INPUT_SLOT = new int[] {25, 34, 43};
 
     private static final int UNORDERED_DUST_SLOT = 7;
-    private static final ItemStack UNORDERED_DUST_ICON = ItemStackUtil.cloneItem(FinalTechItems.ORDERED_DUST);
+    private static final ItemStack UNORDERED_DUST_ICON = ItemStackUtil.cloneItem(FinalTechItemStacks.ORDERED_DUST);
     public static final int[] UNORDERED_DUST_INPUT_SLOT = new int[] {19, 28, 37};
 
     public static final int[] ITEM_PHONY_INPUT_SLOT = new int[] {4};
@@ -83,10 +83,12 @@ public class MatrixReactorMenu extends AbstractMachineMenu {
     @Override
     public void init() {
         super.init();
+
         this.addItem(ORDERED_DUST_SLOT, ORDERED_DUST_ICON);
         this.addMenuClickHandler(ORDERED_DUST_SLOT, ChestMenuUtils.getEmptyClickHandler());
         this.addItem(UNORDERED_DUST_SLOT, UNORDERED_DUST_ICON);
         this.addMenuClickHandler(UNORDERED_DUST_SLOT, ChestMenuUtils.getEmptyClickHandler());
+
         this.addItem(STATUS_SLOT, Icon.STATUS_ICON);
         this.addMenuClickHandler(STATUS_SLOT, ChestMenuUtils.getEmptyClickHandler());
     }
@@ -102,17 +104,17 @@ public class MatrixReactorMenu extends AbstractMachineMenu {
     }
 
     @Override
-    public int[] getSlotsAccessedByItemTransport(DirtyChestMenu menu, ItemTransportFlow flow, ItemStack item) {
+    public int[] getSlotsAccessedByItemTransport(DirtyChestMenu menu, ItemTransportFlow flow, ItemStack itemStack) {
         if (ItemTransportFlow.WITHDRAW.equals(flow)) {
             return OUTPUT_SLOT;
         } else if (flow == null) {
             return new int[0];
         }
-        if (ItemStackUtil.isItemSimilar(item, FinalTechItems.ORDERED_DUST)) {
+        if (FinalTechItems.ORDERED_DUST.verifyItem(itemStack)) {
             return ORDERED_DUST_INPUT_SLOT;
-        } else if (ItemStackUtil.isItemSimilar(item, FinalTechItems.UNORDERED_DUST)) {
+        } else if (FinalTechItems.UNORDERED_DUST.verifyItem(itemStack)) {
             return UNORDERED_DUST_INPUT_SLOT;
-        } else if (ItemPhony.isValid(item)) {
+        } else if (FinalTechItems.ITEM_PHONY.verifyItem(itemStack)) {
             return ITEM_PHONY_INPUT_SLOT;
         } else {
             return ITEM_INPUT_SLOT;

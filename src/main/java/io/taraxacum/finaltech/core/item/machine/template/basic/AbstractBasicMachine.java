@@ -30,7 +30,7 @@ import java.util.*;
  * @since 1.0
  */
 public abstract class AbstractBasicMachine extends AbstractMachine implements RecipeItem {
-    private final String OFFSET_KEY = "offset";
+    private final String offsetKey = "offset";
 
     @ParametersAreNonnullByDefault
     protected AbstractBasicMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
@@ -63,7 +63,7 @@ public abstract class AbstractBasicMachine extends AbstractMachine implements Re
     @Override
     protected final void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
         BlockMenu blockMenu = BlockStorage.getInventory(block);
-        int offset = config.contains(OFFSET_KEY) ? Integer.parseInt(config.getString(OFFSET_KEY)) : 0;
+        int offset = config.contains(this.offsetKey) ? Integer.parseInt(config.getString(offsetKey)) : 0;
         int recipeLock = config.contains(MachineRecipeLock.KEY) ? Integer.parseInt(config.getString(MachineRecipeLock.KEY)) : -2;
         MachineUtil.stockSlots(blockMenu.toInventory(), this.getInputSlot());
         MachineRecipe machineRecipe = this.matchRecipe(blockMenu, offset, recipeLock);
@@ -77,7 +77,7 @@ public abstract class AbstractBasicMachine extends AbstractMachine implements Re
     }
 
     protected MachineRecipe matchRecipe(@Nonnull BlockMenu blockMenu, int offset, int recipeLock) {
-        List<AdvancedMachineRecipe> advancedMachineRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getClass());
+        List<AdvancedMachineRecipe> advancedMachineRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getId());
         if (recipeLock >= 0) {
             List<AdvancedMachineRecipe> finalAdvancedMachineRecipeList = advancedMachineRecipeList;
             advancedMachineRecipeList = new ArrayList<>(1);
@@ -92,15 +92,17 @@ public abstract class AbstractBasicMachine extends AbstractMachine implements Re
                 craft.consumeItem(blockMenu.toInventory());
                 if (recipeLock == Integer.parseInt(MachineRecipeLock.VALUE_UNLOCK)) {
                     ItemStack item = blockMenu.getItemInSlot(AbstractLockMachineMenu.RECIPE_LOCK_SLOT);
-                    MachineRecipeLock.HELPER.setIcon(item, String.valueOf(craft.getOffset()), this);
+                    if(blockMenu.hasViewer()) {
+                        MachineRecipeLock.HELPER.setIcon(item, String.valueOf(craft.getOffset()), this);
+                    }
                     BlockStorage.addBlockInfo(blockMenu.getLocation(), MachineRecipeLock.KEY, String.valueOf(craft.getOffset()));
                 } else if (recipeLock == Integer.parseInt(MachineRecipeLock.VALUE_LOCK_OFF)) {
-                    BlockStorage.addBlockInfo(blockMenu.getLocation(), OFFSET_KEY, String.valueOf(craft.getOffset()));
+                    BlockStorage.addBlockInfo(blockMenu.getLocation(), this.offsetKey, String.valueOf(craft.getOffset()));
                 }
                 return craft.calMachineRecipe(this.getMachineRecipes().get(offset).getTicks());
             }
         }
-        BlockStorage.addBlockInfo(blockMenu.getLocation(), OFFSET_KEY, null);
+        BlockStorage.addBlockInfo(blockMenu.getLocation(), this.offsetKey, null);
         return null;
     }
 }

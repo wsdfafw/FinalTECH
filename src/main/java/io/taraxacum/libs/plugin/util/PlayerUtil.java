@@ -9,6 +9,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
@@ -20,35 +21,30 @@ public class PlayerUtil {
     public static final String IGNORE_PERMISSION_VALUE_FALSE = "f";
     public static final String IGNORE_PERMISSION_VALUE_TRUE = "t";
 
-    public static String parseIdInItem(@Nonnull ItemStack item) {
-        if (ItemStackUtil.isItemNull(item)) {
+    @Nullable
+    public static String parseIdInItem(@Nonnull ItemStack itemStack) {
+        if (ItemStackUtil.isItemNull(itemStack)) {
             return null;
         }
-        ItemMeta itemMeta = item.getItemMeta();
-        return PlayerUtil.parseIdInItem(itemMeta);
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        return itemMeta == null ? null : PlayerUtil.parseIdInItem(itemMeta);
     }
+    @Nullable
     public static String parseIdInItem(@Nonnull ItemMeta itemMeta) {
         PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
-        if (persistentDataContainer.has(KEY_UUID, PersistentDataType.STRING)) {
-            return persistentDataContainer.get(KEY_UUID, PersistentDataType.STRING);
-        } else {
-            return null;
-        }
+        return persistentDataContainer.get(KEY_UUID, PersistentDataType.STRING);
     }
 
-    public static Boolean parseIgnorePermissionInItem(@Nonnull ItemStack item) {
-        if (ItemStackUtil.isItemNull(item)) {
+    public static Boolean parseIgnorePermissionInItem(@Nonnull ItemStack itemStack) {
+        if (ItemStackUtil.isItemNull(itemStack)) {
             return null;
         }
-        ItemMeta itemMeta = item.getItemMeta();
-        return PlayerUtil.parseIgnorePermissionInItem(itemMeta);
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        return itemMeta == null ? null : PlayerUtil.parseIgnorePermissionInItem(itemMeta);
     }
     public static Boolean parseIgnorePermissionInItem(@Nonnull ItemMeta itemMeta) {
         PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
-        if (persistentDataContainer.has(KEY_IGNORE_PERMISSION, PersistentDataType.STRING)) {
-            return IGNORE_PERMISSION_VALUE_TRUE.equals(persistentDataContainer.get(KEY_IGNORE_PERMISSION, PersistentDataType.STRING));
-        }
-        return false;
+        return IGNORE_PERMISSION_VALUE_TRUE.equals(persistentDataContainer.get(KEY_IGNORE_PERMISSION, PersistentDataType.STRING));
     }
 
     public static boolean updateIdInItem(@Nonnull ItemStack item, @Nonnull Player player, boolean ignoreExisted) {
@@ -56,7 +52,7 @@ public class PlayerUtil {
             return false;
         }
         ItemMeta itemMeta = item.getItemMeta();
-        if (PlayerUtil.updateIdInItem(itemMeta, player, ignoreExisted)) {
+        if (itemMeta != null && PlayerUtil.updateIdInItem(itemMeta, player, ignoreExisted)) {
             item.setItemMeta(itemMeta);
             return true;
         }

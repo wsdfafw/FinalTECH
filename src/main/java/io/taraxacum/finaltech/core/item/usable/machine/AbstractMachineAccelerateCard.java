@@ -99,7 +99,7 @@ public abstract class AbstractMachineAccelerateCard extends UsableSlimefunItem {
         }
 
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-        javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.GLOW, 0, block));
+        javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
 
         Runnable runnable = () -> {
             for (int i = 0; i < time; i++) {

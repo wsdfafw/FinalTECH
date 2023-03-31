@@ -51,12 +51,12 @@ public class FuelCharger extends AbstractFaceMachine implements RecipeItem {
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-        javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> FuelCharger.this.function(block, 1, location -> {
+        javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> FuelCharger.this.pointFunction(block, 1, location -> {
             BlockState blockState = PaperLib.getBlockState(location.getBlock(), false).getState();
-            if (blockState instanceof Furnace) {
-                ((Furnace) blockState).setBurnTime((short)(200 + Slimefun.getTickerTask().getTickRate()));
-            } else if (blockState instanceof BrewingStand) {
-                ((BrewingStand) blockState).setFuelLevel(200 + Slimefun.getTickerTask().getTickRate());
+            if (blockState instanceof Furnace furnace) {
+                furnace.setBurnTime((short)(200 + Slimefun.getTickerTask().getTickRate()));
+            } else if (blockState instanceof BrewingStand brewingStand) {
+                brewingStand.setFuelLevel(200 + Slimefun.getTickerTask().getTickRate());
             }
             return 0;
         }));

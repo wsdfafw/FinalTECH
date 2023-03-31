@@ -106,6 +106,14 @@ public class JavaUtil {
         return JavaUtil.shuffle(result);
     }
 
+    public static int[] generateInts(int length) {
+        int[] result = new int[length];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = i;
+        }
+        return result;
+    }
+
     /**
      * shuffle a list by int[]
      * outputList[0] = inputList[int[0]]
@@ -148,5 +156,17 @@ public class JavaUtil {
         long beginTime = System.nanoTime();
         runnable.run();
         return System.nanoTime() - beginTime;
+    }
+
+    /**
+     * @return In most case, it will not return null. (￣▽￣)"
+     */
+    public static <T> T getFirstNotNull(T... objects) {
+        for(T object : objects) {
+            if(object != null) {
+                return object;
+            }
+        }
+        return null;
     }
 }

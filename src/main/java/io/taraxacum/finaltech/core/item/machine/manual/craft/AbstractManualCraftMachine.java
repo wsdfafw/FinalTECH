@@ -8,12 +8,10 @@ import io.github.thebusybiscuit.slimefun4.core.attributes.EnergyNetComponent;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponentType;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
-import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.item.machine.manual.AbstractManualMachine;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.manual.AbstractManualMachineMenu;
 import io.taraxacum.finaltech.core.menu.manual.ManualCraftMachineMenu;
-import io.taraxacum.finaltech.util.LocationUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
@@ -21,23 +19,28 @@ import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Final_ROOT
  * @since 1.0
  */
 public abstract class AbstractManualCraftMachine extends AbstractManualMachine implements RecipeItem, EnergyNetComponent {
-    public static final String KEY_COUNT = "count";
-    public static int COUNT_THRESHOLD = ConfigUtil.getOrDefaultItemSetting(Slimefun.getTickerTask().getTickRate() * 4, "ManualCraftMachine", "threshold");
-    public static int CAPACITY = ConfigUtil.getOrDefaultItemSetting(9216, "ManualCraftMachine", "capacity");
-    public static String CHARGE = String.valueOf(ConfigUtil.getOrDefaultItemSetting(1, "ManualCraftMachine", "charge"));
+    private final Map<Location, Integer> locationCountMap = new HashMap<>();
+    private int countThreshold = ConfigUtil.getOrDefaultItemSetting(Slimefun.getTickerTask().getTickRate() * 2, this, "threshold");
+    private int leftClickAmount = ConfigUtil.getOrDefaultItemSetting(1, this, "left-click-amount");
+    private int rightClickAmount = ConfigUtil.getOrDefaultItemSetting(64, this, "right-click-amount");
+    private int leftShiftClickAmount = ConfigUtil.getOrDefaultItemSetting(576, this, "left-shift-click-amount");
+    private int rightShiftClickAmount = ConfigUtil.getOrDefaultItemSetting(2304, this, "right-shift-click-amount");
+
+    private int capacity = ConfigUtil.getOrDefaultItemSetting(18432, this, "capacity");
+    private int charge = ConfigUtil.getOrDefaultItemSetting(1, this, "charge");
+    private int consume = ConfigUtil.getOrDefaultItemSetting(1, this, "consume");
 
     public AbstractManualCraftMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -49,6 +52,7 @@ public abstract class AbstractManualCraftMachine extends AbstractManualMachine i
         return new BlockPlaceHandler(false) {
             @Override
             public void onPlayerPlace(@Nonnull BlockPlaceEvent blockPlaceEvent) {
+                // TODO remove this
                 BlockStorage.addBlockInfo(blockPlaceEvent.getBlock().getLocation(), ManualCraftMachineMenu.KEY, "0");
             }
         };
@@ -57,45 +61,30 @@ public abstract class AbstractManualCraftMachine extends AbstractManualMachine i
     @Nonnull
     @Override
     protected AbstractManualMachineMenu newMachineMenu() {
+        // TODO more beautiful code
         return new ManualCraftMachineMenu(this);
     }
 
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        if (blockMenu.hasViewer()) {
-            this.getMachineMenu().updateInventory(blockMenu.toInventory(), block.getLocation());
-        }
-
         String charge = EnergyUtil.getCharge(config);
-        int intCharge = Integer.parseInt(charge) + 1;
-        if(intCharge > CAPACITY / 2) {
+        int intCharge = Integer.parseInt(charge) + this.charge;
+        if(intCharge > this.capacity / 2) {
             intCharge /= 2;
         }
 
-        EnergyUtil.setCharge(block.getLocation(), String.valueOf(Math.min(intCharge, CAPACITY)));
+        EnergyUtil.setCharge(block.getLocation(), String.valueOf(Math.min(intCharge, this.capacity)));
 
-        int count = Integer.parseInt(LocationUtil.getNonNullStringNumber(config, AbstractManualCraftMachine.KEY_COUNT));
-        if (count > 0) {
-            count -= Slimefun.getTickerTask().getTickRate();
-            count = Math.max(count, 0);
-            config.setValue(KEY_COUNT, String.valueOf(count));
-
-            if (count > COUNT_THRESHOLD) {
-                Location location = block.getLocation();
-                List<String> nameList = new ArrayList<>();
-                for (HumanEntity humanEntity : blockMenu.toInventory().getViewers()) {
-                    nameList.add(humanEntity.getName());
-                }
-                String warn = FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("items", "ManualCraftMachine", "warn"),
-                        location.getWorld().getName(),
-                        String.valueOf(location.getBlockX()),
-                        String.valueOf(location.getBlockY()),
-                        String.valueOf(location.getBlockZ()),
-                        nameList.toString());
-                this.getAddon().getJavaPlugin().getLogger().warning(warn);
-            }
+        BlockMenu blockMenu = BlockStorage.getInventory(block);
+        if(blockMenu.hasViewer()) {
+            this.setMachineMenu().updateInventory(blockMenu.toInventory(), block.getLocation());
         }
+    }
+
+    @Override
+    protected void uniqueTick() {
+        super.uniqueTick();
+        this.locationCountMap.clear();
     }
 
     @Nonnull
@@ -106,6 +95,34 @@ public abstract class AbstractManualCraftMachine extends AbstractManualMachine i
 
     @Override
     public int getCapacity() {
-        return CAPACITY;
+        return capacity;
+    }
+
+    public Map<Location, Integer> getLocationCountMap() {
+        return locationCountMap;
+    }
+
+    public int getConsume() {
+        return consume;
+    }
+
+    public int getCountThreshold() {
+        return countThreshold;
+    }
+
+    public int getLeftClickAmount() {
+        return leftClickAmount;
+    }
+
+    public int getRightClickAmount() {
+        return rightClickAmount;
+    }
+
+    public int getLeftShiftClickAmount() {
+        return leftShiftClickAmount;
+    }
+
+    public int getRightShiftClickAmount() {
+        return rightShiftClickAmount;
     }
 }

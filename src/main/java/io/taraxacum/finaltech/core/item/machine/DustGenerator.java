@@ -11,12 +11,11 @@ import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponen
 import io.taraxacum.common.util.MathUtil;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.item.unusable.ItemPhony;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.DustGeneratorMenu;
 import io.taraxacum.finaltech.setup.FinalTechItems;
-import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
@@ -34,12 +33,12 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  * @since 1.0
  */
-public class DustGenerator extends AbstractMachine implements RecipeItem, EnergyNetProvider {
-    private final String KEY_COUNT = "count";
-    private final int CAPACITY = ConfigUtil.getOrDefaultItemSetting(Integer.MAX_VALUE / 4, this, "capacity");
+public class DustGenerator extends AbstractMachine implements RecipeItem, MenuUpdater, EnergyNetProvider {
+    private final String keyCount = "count";
+    private final int capacity = ConfigUtil.getOrDefaultItemSetting(Integer.MAX_VALUE / 4, this, "capacity");
     // default = 144115188344291328
     // long.max= 9223372036854775808
-    private final long COUNT_LIMIT = (long) this.CAPACITY * (this.CAPACITY + 1) / 2;
+    private final long countLimit = (long) this.capacity * (this.capacity + 1) / 2;
 
     public DustGenerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -51,7 +50,7 @@ public class DustGenerator extends AbstractMachine implements RecipeItem, Energy
         return new BlockPlaceHandler(false) {
             @Override
             public void onPlayerPlace(@Nonnull BlockPlaceEvent blockPlaceEvent) {
-                BlockStorage.addBlockInfo(blockPlaceEvent.getBlock().getLocation(), KEY_COUNT, StringNumberUtil.ZERO);
+                BlockStorage.addBlockInfo(blockPlaceEvent.getBlock().getLocation(), keyCount, StringNumberUtil.ZERO);
             }
         };
     }
@@ -73,19 +72,19 @@ public class DustGenerator extends AbstractMachine implements RecipeItem, Energy
         BlockMenu blockMenu = BlockStorage.getInventory(block);
         Location location = block.getLocation();
 
-        long count = Long.parseLong(config.getString(KEY_COUNT));
+        long count = Long.parseLong(config.getString(keyCount));
         boolean work = false;
         for (int slot : this.getInputSlot()) {
-            ItemStack item = blockMenu.getItemInSlot(slot);
-            if (ItemStackUtil.isItemSimilar(item, FinalTechItems.UNORDERED_DUST)) {
-                item.setAmount(item.getAmount() - 1);
-                count = Math.min(++count, this.COUNT_LIMIT);
+            ItemStack itemStack = blockMenu.getItemInSlot(slot);
+            if (FinalTechItems.UNORDERED_DUST.verifyItem(itemStack)) {
+                itemStack.setAmount(itemStack.getAmount() - 1);
+                count = Math.min(++count, this.countLimit);
                 work = true;
                 break;
-            } else if (ItemPhony.isValid(item)) {
-                item.setAmount(item.getAmount() - 1);
+            } else if (FinalTechItems.ITEM_PHONY.verifyItem(itemStack)) {
+                itemStack.setAmount(itemStack.getAmount() - 1);
                 count *= 2;
-                count = Math.min(count, this.COUNT_LIMIT);
+                count = Math.min(count, this.countLimit);
                 work = true;
                 break;
             }
@@ -95,13 +94,16 @@ public class DustGenerator extends AbstractMachine implements RecipeItem, Energy
         }
         int charge = (int) MathUtil.getBig(1, 1, -2 * count);
 
-        BlockStorage.addBlockInfo(location, KEY_COUNT, String.valueOf(count));
+        BlockStorage.addBlockInfo(location, keyCount, String.valueOf(count));
         if (count > 0) {
             this.addCharge(location, charge);
         }
 
         if(blockMenu.hasViewer()) {
-            this.updateMenu(blockMenu, count, charge, this.getCharge(location));
+            this.updateMenu(blockMenu, DustGeneratorMenu.STATUS_SLOT, this,
+                    String.valueOf(count),
+                    String.valueOf(charge),
+                    String.valueOf(this.getCharge(location)));
         }
     }
 
@@ -125,20 +127,12 @@ public class DustGenerator extends AbstractMachine implements RecipeItem, Energy
 
     @Override
     public int getCapacity() {
-        return CAPACITY;
-    }
-
-    private void updateMenu(@Nonnull BlockMenu blockMenu, long count, int charge, int energy) {
-        ItemStack item = blockMenu.getItemInSlot(DustGeneratorMenu.STATUS_SLOT);
-        ItemStackUtil.setLore(item, ConfigUtil.getStatusMenuLore(FinalTech.getLanguageManager(), this,
-                String.valueOf(count),
-                String.valueOf(charge),
-                String.valueOf(energy)));
+        return capacity;
     }
 
     @Override
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
-                String.valueOf(this.CAPACITY));
+                String.valueOf(this.capacity));
     }
 }

@@ -8,9 +8,9 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.item.unusable.Entropy;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.unit.NormalStorageUnitMenu;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
@@ -52,11 +52,11 @@ public class EntropyConstructor extends AbstractMachine implements RecipeItem {
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
         BlockMenu blockMenu = BlockStorage.getInventory(block);
-        ItemStack entropy = Entropy.newItem(null);
+        ItemStack entropy = ItemStackUtil.cloneItem(FinalTechItemStacks.ENTROPY);
         for (int slot : this.getOutputSlot()) {
-            ItemStack item = blockMenu.getItemInSlot(slot);
-            if (!ItemStackUtil.isItemNull(item)) {
-                entropy.setAmount(item.getAmount());
+            ItemStack itemStack = blockMenu.getItemInSlot(slot);
+            if (!ItemStackUtil.isItemNull(itemStack)) {
+                entropy.setAmount(itemStack.getAmount());
                 blockMenu.replaceExistingItem(slot, entropy);
             }
         }

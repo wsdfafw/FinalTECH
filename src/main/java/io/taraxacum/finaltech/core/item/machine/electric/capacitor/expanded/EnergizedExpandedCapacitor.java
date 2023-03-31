@@ -6,8 +6,6 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import org.bukkit.inventory.ItemStack;
 
-import javax.annotation.Nonnull;
-
 /**
  * @author Final_ROOT
  * @since 2.0
@@ -24,9 +22,8 @@ public class EnergizedExpandedCapacitor extends AbstractExpandedElectricCapacito
         return this.capacity * 2;
     }
 
-    @Nonnull
     @Override
-    public String getMaxStack() {
-        return String.valueOf(this.stack - 2);
+    public int getMaxStack() {
+        return this.stack - 2;
     }
 }

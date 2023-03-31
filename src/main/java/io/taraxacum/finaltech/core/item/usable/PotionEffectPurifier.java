@@ -38,11 +38,12 @@ public class PotionEffectPurifier extends UsableSlimefunItem implements RecipeIt
      */
     @Override
     protected void function(@Nonnull PlayerRightClickEvent playerRightClickEvent) {
+        playerRightClickEvent.cancel();
         Player player = playerRightClickEvent.getPlayer();
         if (player.isSneaking()) {
             Location location = player.getLocation();
             World world = location.getWorld();
-            // PARTICAL EFFECT
+            // TODO particle effect
             if (world != null) {
                 for (Entity entity : world.getNearbyEntities(location, this.horizontalRange, this.verticalRange, this.horizontalRange, entity -> entity instanceof LivingEntity)) {
                     for (PotionEffect potionEffect : ((LivingEntity) entity).getActivePotionEffects()) {

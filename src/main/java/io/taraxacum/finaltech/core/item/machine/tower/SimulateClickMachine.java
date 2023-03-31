@@ -17,6 +17,8 @@ import io.taraxacum.finaltech.util.LocationUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
+import io.taraxacum.libs.slimefun.dto.LocationInfo;
+import io.taraxacum.libs.slimefun.util.BlockStorageConfigUtil;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
@@ -30,12 +32,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Final_ROOT
  * @since 2.2
  */
 public class SimulateClickMachine extends AbstractTower implements RecipeItem {
+    private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
     private final double rangeRate = ConfigUtil.getOrDefaultItemSetting(0.4, this, "range-rate");
 
     public SimulateClickMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
@@ -65,37 +70,40 @@ public class SimulateClickMachine extends AbstractTower implements RecipeItem {
         Location location = block.getLocation();
         BlockMenu blockMenu = BlockStorage.getInventory(block);
 
-        ItemStack inputItem = blockMenu.getItemInSlot(this.getInputSlot()[0]);
-        ItemStack outputItem = blockMenu.getItemInSlot(this.getOutputSlot()[0]);
+        ItemStack inputItemStack = blockMenu.getItemInSlot(this.getInputSlot()[0]);
+        ItemStack outputItemStack = blockMenu.getItemInSlot(this.getOutputSlot()[0]);
 
-        if (ItemStackUtil.isItemNull(inputItem) || !ItemStackUtil.isItemNull(outputItem)) {
+        if (ItemStackUtil.isItemNull(inputItemStack) || !ItemStackUtil.isItemNull(outputItemStack)) {
             return;
         }
 
         int digit = 0;
-        SlimefunItem sfItem = SlimefunItem.getByItem(inputItem);
+        SlimefunItem sfItem = SlimefunItem.getByItem(inputItemStack);
         if(sfItem instanceof DigitalItem digitalItem) {
             digit = digitalItem.getDigit();
         }
 
         if(digit > 0) {
             location.setY(location.getY() - 1);
-            Block targetBlock = block.getRelative(BlockFace.DOWN);
 
-            if(BlockStorage.hasBlockInfo(location) && BlockStorage.hasInventory(targetBlock)) {
-                outputItem = ItemStackUtil.cloneItem(inputItem);
-                outputItem.setAmount(1);
-                inputItem.setAmount(inputItem.getAmount() - 1);
-                blockMenu.pushItem(outputItem, this.getOutputSlot()[0]);
+            LocationInfo locationInfo = LocationInfo.get(location);
+            if(locationInfo != null && !this.notAllowedId.contains(locationInfo.getId())) {
+                outputItemStack = ItemStackUtil.cloneItem(inputItemStack);
+                outputItemStack.setAmount(1);
+                inputItemStack.setAmount(inputItemStack.getAmount() - 1);
+                blockMenu.pushItem(outputItemStack, this.getOutputSlot()[0]);
 
                 double range = digit * this.rangeRate;
 
                 JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
                 javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
-                    BlockMenu targetBlockMenu = BlockStorage.getInventory(targetBlock);
-                    for (Entity entity : location.getWorld().getNearbyEntities(LocationUtil.getCenterLocation(targetBlock), range, range, range, entity -> entity instanceof Player)) {
-                        if(targetBlockMenu.canOpen(targetBlock, (Player) entity)) {
-                            targetBlockMenu.open((Player) entity);
+                    BlockMenu targetBlockMenu = BlockStorage.getInventory(location);
+                    if(targetBlockMenu != null) {
+                        Block targetBlock = location.getBlock();
+                        for (Entity entity : location.getWorld().getNearbyEntities(LocationUtil.getCenterLocation(targetBlock), range, range, range, entity -> entity instanceof Player)) {
+                            if(targetBlockMenu.canOpen(targetBlock, (Player) entity)) {
+                                targetBlockMenu.open((Player) entity);
+                            }
                         }
                     }
                 });

@@ -40,13 +40,13 @@ public class RecipeItemGroup extends FlexItemGroup {
     private static final int BIG_LIMIT = 36;
 
     public RecipeItemGroup(@Nonnull NamespacedKey key, @Nonnull SlimefunItem slimefunItem) {
-        super(key, ItemStackUtil.cloneItem(slimefunItem.getItem()));
+        super(key, ItemStackUtil.cloneWithoutNBT(slimefunItem.getItem()));
         this.id = slimefunItem.getId();
         this.page = 1;
     }
 
     public RecipeItemGroup(@Nonnull NamespacedKey key, @Nonnull SlimefunItem slimefunItem, int page) {
-        super(key, ItemStackUtil.cloneItem(slimefunItem.getItem()));
+        super(key, ItemStackUtil.cloneWithoutNBT(slimefunItem.getItem()));
         this.id = slimefunItem.getId();
         this.page = page;
     }
@@ -90,6 +90,9 @@ public class RecipeItemGroup extends FlexItemGroup {
     public static RecipeItemGroup getByItemStack(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode, @Nullable ItemStack itemStack, int page) {
         SlimefunItem slimefunItem = SlimefunItem.getByItem(itemStack);
         if (slimefunItem != null) {
+            if(!playerProfile.hasUnlocked(slimefunItem.getResearch())) {
+                return null;
+            }
             if (page == 1) {
                 if (ID_MAP.containsKey(slimefunItem.getId())) {
                     return ID_MAP.get(slimefunItem.getId());
@@ -120,6 +123,34 @@ public class RecipeItemGroup extends FlexItemGroup {
     @Nullable
     public static RecipeItemGroup getByItemStack(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode, @Nullable ItemStack itemStack) {
         return RecipeItemGroup.getByItemStack(player, playerProfile, slimefunGuideMode, itemStack, 1);
+    }
+
+    @Nullable
+    public static RecipeItemGroup getBySlimefunItem(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode, @Nullable SlimefunItem slimefunItem, int page) {
+        if (slimefunItem != null) {
+            if (page == 1) {
+                if (ID_MAP.containsKey(slimefunItem.getId())) {
+                    return ID_MAP.get(slimefunItem.getId());
+                } else {
+                    synchronized (ID_MAP) {
+                        if (ID_MAP.containsKey(slimefunItem.getId())) {
+                            return ID_MAP.get(slimefunItem.getId());
+                        }
+                        RecipeItemGroup recipeItemGroup = new RecipeItemGroup(new NamespacedKey(FinalTech.getInstance(), "SLIMEFUN_ITEM" + slimefunItem.getId().hashCode() + "_" + page), slimefunItem);
+                        ID_MAP.put(slimefunItem.getId(), recipeItemGroup);
+                        return recipeItemGroup;
+                    }
+                }
+            } else {
+                return new RecipeItemGroup(new NamespacedKey(FinalTech.getInstance(), "SLIMEFUN_ITEM" + slimefunItem.getId().hashCode()), slimefunItem, page);
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static RecipeItemGroup getBySlimefunItem(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode, @Nullable SlimefunItem slimefunItem) {
+        return RecipeItemGroup.getBySlimefunItem(player, playerProfile, slimefunGuideMode, slimefunItem, 1);
     }
 
     @Nonnull

@@ -68,7 +68,7 @@ public abstract class AbstractGeneratorMachine extends AbstractMachine implement
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
         BlockMenu blockMenu = BlockStorage.getInventory(block);
-        List<AdvancedMachineRecipe> advancedMachineRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getClass());
+        List<AdvancedMachineRecipe> advancedMachineRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getId());
         AdvancedMachineRecipe advancedMachineRecipe = advancedMachineRecipeList.get((int) (FinalTech.getRandom().nextDouble() * advancedMachineRecipeList.size()));
         ItemAmountWrapper[] outputs = advancedMachineRecipe.getOutput();
         int quantityModule = Icon.updateQuantityModule(blockMenu, GeneratorMachineMenu.MODULE_SLOT, GeneratorMachineMenu.STATUS_SLOT);

@@ -46,7 +46,7 @@ public abstract class AbstractLockMachineMenu extends AbstractLimitMachineMenu {
         MachineRecipeLock.HELPER.checkOrSetBlockStorage(location);
         ItemStack item = inventory.getItem(this.getRecipeLockSlot());
         String recipeLock = BlockStorage.getLocationInfo(location, MachineRecipeLock.KEY);
-        MachineRecipeLock.HELPER.setIcon(item, recipeLock, this.getMachine());
+        MachineRecipeLock.HELPER.setIcon(item, recipeLock, this.getSlimefunItem());
     }
 
     public int getRecipeLockSlot() {

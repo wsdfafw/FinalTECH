@@ -6,6 +6,8 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
+import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.item.unusable.ReplaceableCard;
 import io.taraxacum.libs.slimefun.dto.RecipeTypeRegistry;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
@@ -14,6 +16,7 @@ import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.libs.slimefun.interfaces.ValidItem;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
@@ -59,25 +62,35 @@ public class MatrixItemDismantleTable extends AbstractMachine implements RecipeI
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
         BlockMenu blockMenu = BlockStorage.getInventory(block);
         if (MachineUtil.isEmpty(blockMenu.toInventory(), this.getOutputSlot())) {
-            ItemStack item = blockMenu.getItemInSlot(this.getInputSlot()[0]);
-            SlimefunItem sfItem = SlimefunItem.getByItem(item);
-            if (sfItem != null && item.getAmount() >= sfItem.getRecipeOutput().getAmount() && this.calAllowed(sfItem) && ItemStackUtil.isEnchantmentSame(item, sfItem.getRecipeOutput()) && ItemStackUtil.isItemSimilar(item, sfItem.getRecipeOutput())) {
-                int amount = item.getAmount() / sfItem.getRecipeOutput().getAmount();
-                for (ItemStack outputItem : sfItem.getRecipe()) {
-                    if (!ItemStackUtil.isItemNull(outputItem)) {
-                        amount = Math.min(amount, outputItem.getMaxStackSize() / outputItem.getAmount());
-                    }
+            ItemStack itemStack = blockMenu.getItemInSlot(this.getInputSlot()[0]);
+            SlimefunItem sfItem = SlimefunItem.getByItem(itemStack);
+            if (sfItem != null && this.calAllowed(sfItem) && itemStack.getAmount() >= sfItem.getRecipeOutput().getAmount()) {
+                boolean verify;
+                if(sfItem instanceof ValidItem validItem) {
+                    verify = validItem.verifyItem(itemStack);
+                } else {
+                    verify = ItemStackUtil.isItemSimilar(itemStack, sfItem.getRecipeOutput()) && ItemStackUtil.isEnchantmentSame(itemStack, sfItem.getRecipeOutput());
                 }
-                item.setAmount(item.getAmount() - sfItem.getRecipeOutput().getAmount() * amount);
-                for (int i = 0; i < this.getOutputSlot().length && i < sfItem.getRecipe().length; i++) {
-                    if (!ItemStackUtil.isItemNull(sfItem.getRecipe()[i])) {
-                        ItemStack outputItem = ItemStackUtil.cloneItem(sfItem.getRecipe()[i]);
-                        ItemStack liquidCard = RecipeUtil.getLiquidCard(outputItem);
-                        if (liquidCard != null) {
-                            outputItem = liquidCard;
+                if(verify) {
+                    int amount = itemStack.getAmount() / sfItem.getRecipeOutput().getAmount();
+                    for (ItemStack outputItem : sfItem.getRecipe()) {
+                        if (!ItemStackUtil.isItemNull(outputItem)) {
+                            amount = Math.min(amount, outputItem.getMaxStackSize() / outputItem.getAmount());
                         }
-                        outputItem.setAmount(outputItem.getAmount() * amount);
-                        blockMenu.replaceExistingItem(this.getOutputSlot()[i], outputItem);
+                    }
+                    itemStack.setAmount(itemStack.getAmount() - sfItem.getRecipeOutput().getAmount() * amount);
+                    for (int i = 0; i < this.getOutputSlot().length && i < sfItem.getRecipe().length; i++) {
+                        if (!ItemStackUtil.isItemNull(sfItem.getRecipe()[i])) {
+                            ItemStack outputItem;
+                            ReplaceableCard replaceableCard = RecipeUtil.getReplaceableCard(sfItem.getRecipe()[i]);
+                            if (replaceableCard != null && replaceableCard.getExtraSourceMaterial() != null) {
+                                outputItem = ItemStackUtil.cloneItem(replaceableCard.getItem());
+                            } else {
+                                outputItem = ItemStackUtil.cloneItem(sfItem.getRecipe()[i]);
+                            }
+                            outputItem.setAmount(outputItem.getAmount() * amount);
+                            blockMenu.replaceExistingItem(this.getOutputSlot()[i], outputItem);
+                        }
                     }
                 }
             }
@@ -92,6 +105,8 @@ public class MatrixItemDismantleTable extends AbstractMachine implements RecipeI
     @Override
     public void registerDefaultRecipes() {
         RecipeTypeRegistry.getInstance().reload();
+
+        RecipeUtil.registerDescriptiveRecipeWithBorder(FinalTech.getLanguageManager(), this);
 
         for (RecipeType recipeType : RecipeTypeRegistry.getInstance().getRecipeTypeSet()) {
             if (!this.notAllowedRecipeType.contains(recipeType.getKey().getKey()) && !ItemStackUtil.isItemNull(recipeType.toItem())) {
@@ -130,7 +145,11 @@ public class MatrixItemDismantleTable extends AbstractMachine implements RecipeI
                         continue;
                     }
                     hasRecipe = true;
-                    if (SlimefunItem.getByItem(itemStack) == null && !ItemStackUtil.isItemSimilar(itemStack, new ItemStack(itemStack.getType()))) {
+                    SlimefunItem sfItem = SlimefunItem.getByItem(itemStack);
+                    if (sfItem == null && !ItemStackUtil.isItemSimilar(itemStack, new ItemStack(itemStack.getType()))) {
+                        this.notAllowedId.add(slimefunItemId);
+                        return false;
+                    } else if(sfItem instanceof ValidItem) {
                         this.notAllowedId.add(slimefunItemId);
                         return false;
                     }
