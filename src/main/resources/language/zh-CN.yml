@@ -1,17 +1,23 @@
 FinalTech: '乱序技艺'
 helper:
   ICON:
+    consumer:
+      name: '{color:normal}Consumer'
+    generator:
+      name: '{color:normal}Generator'
+    capacitor:
+      name: '{color:normal}Capacitor'
     wiki-icon:
       name: '{color:stress}维基WIKI'
       lore:
         - '§7{1}'
         - '{color:normal}研究： {color:negative}{2}'
         - '{color:normal}附属： {color:initiative}{3}'
-        - '{color:normal}输入价值: {color:number}{4}'
-        - '{color:normal}输出价值: {color:number}{5}'
+        - '{color:normal}EE Input Value: {color:number}{4}'
+        - '{color:normal}EE Output Value: {color:number}{5}'
       lore-energy:
         - '{color:normal}电器类型: {color:passive}{1}'
-        - '{color:normal}总储电量: {color:number}{2}'
+        - '{color:normal}Energy Capacity: {color:number}{2} J'
       no-research: '{color:positive}无'
       GENERATOR: '发电机'
       CAPACITOR: '电容'
@@ -372,6 +378,13 @@ items:
         name: '{color:positive}用途'
         lore:
           - '{color:normal}可以在部分机器的合成配方中代替奶桶'
+  FINALTECH_FLINT_AND_STEEL_CARD:
+    name: '{color:prandom}Flint and steel Card'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Can be used to replace fline and steel in some machine'
   FINALTECH_GEARWHEEL:
     name: '{color:prandom}嵌齿轮'
     info:
@@ -392,7 +405,6 @@ items:
         lore:
           - '{color:normal}可以在{id:FINALTECH_EQUIVALENT_EXCHANGE_TABLE}中获得'
         output: 'FINALTECH_EQUIVALENT_EXCHANGE_TABLE'
-    message: '{color:normal}你忘记了一些:D'
   FINALTECH_ENTROPY:
     name: '{color:prandom}熵'
     info:
@@ -401,6 +413,20 @@ items:
         lore:
           - '{color:normal}可以在{id:FINALTECH_ENTROPY_CONSTRUCTOR}中获得'
         output: 'FINALTECH_ENTROPY_CONSTRUCTOR'
+      2:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be obtained in {id:FINALTECH_BASIC_LOGIC_FACTORY}'
+        output: 'FINALTECH_BASIC_LOGIC_FACTORY'
+  FINALTECH_ETHER:
+    name: '{color:prandom}Ether'
+    info:
+      1:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}This is a GEO resource'
+          - '{color:normal}It should be mined by {id:FINALTECH_ETHER_MINER}'
+        output: 'FINALTECH_ETHER_MINER'
   FINALTECH_BOX:
     name: '{color:prandom}盒'
     info:
@@ -436,15 +462,7 @@ items:
         lore:
           - '{color:normal}如果玩家死亡时持有 {id:FINALTECH_BOX}'
           - '{color:normal}玩家将强制失去全部持有的 {id:FINALTECH_SHINE} {color:normal}'
-          - '{color:negative}玩家死后将丢失所有物品！！！'
-      5:
-        name: '{color:negative}贴士'
-        lore:
-          - '{color:normal}当手持 {id:FINALTECH_SHINE} {color:normal}或 {id:FINALTECH_BOX} 时'
-          - '{color:normal}玩家受到的虚空伤害将会大大增加'
-          - '{color:negative}玩家死后将丢失所有物品！！！'
-          - ''
-          - '{color:negative}灵魂绑定神符可能有用。'
+          - '{color:negative}Player will lose all his items after death!!!'
     message: '{color:normal}你忘记了一些:D'
   FINALTECH_COPY_CARD:
     name: '{color:prandom}复制卡'
@@ -479,15 +497,35 @@ items:
         name: '{color:passive}机制'
         lore:
           - '{color:normal}可以提升一些机器的效率'
-          - '{color:normal}效率调整是向下兼容的'
-  FINALTECH_QUANTITY_MODULE_INFINITY:
-    name: '{color:prandom}无尽数量组件'
+          - '{color:normal}Efficiency tweak is downward compatible'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Efficiency: {color:number}n * {1} + nd{2} {color:conceal}(n = item amount)'
+  FINALTECH_ENERGIZED_QUANTITY_MODULE:
+    name: '{color:prandom}Quantity Module {color:conceal}- {color:positive}Energized'
     info:
       1:
-        name: '{color:passive}机制'
+        name: '{color:passive}Mechanism'
         lore:
-          - '{color:normal}可以将一些机器的效率提升至无限'
-          - '{color:normal}效率调整是向下兼容的'
+          - '{color:normal}Can tweak the efficiency of some machines'
+          - '{color:normal}Efficiency tweak is downward compatible'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Efficiency: {color:number}n * {1} + nd{2} {color:conceal}(n = item amount)'
+  FINALTECH_OVERLOADED_QUANTITY_MODULE:
+    name: '{color:prandom}Quantity Module {color:conceal}- {color:positive}Overloaded'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Can tweak the efficiency of some machines'
+          - '{color:normal}Efficiency tweak is downward compatible'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Efficiency: {color:number}n * {1} + nd{2} {color:conceal}(n = item amount)'
   FINALTECH_SINGULARITY:
     name: '{color:prandom}奇点'
     info:
@@ -522,8 +560,12 @@ items:
         lore:
           - '{color:normal}可以在 {id:FINALTECH_ITEM_SERIALIZATION_CONSTRUCTOR} 中合成'
           - '{color:normal}可以在 {id:FINALTECH_MATRIX_ITEM_SERIALIZATION_CONSTRUCTOR} 中合成'
-          - '{color:normal}可以在 {id:FINALTECH_CARD_OPERATION_TABLE} 中合成'
         output: 'FINALTECH_ITEM_SERIALIZATION_CONSTRUCTOR'
+      2:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_CARD_OPERATION_TABLE}'
+        output: 'FINALTECH_CARD_OPERATION_TABLE'
   FINALTECH_JUSTIFIABILITY:
     name: '{color:prandom}证理'
     info:
@@ -602,82 +644,102 @@ items:
       1:
         name: '{color:initiative}生产方法'
         lore:
-          - '{color:normal}可以在 {id:FINALTECH_DIGITAL_GENERATOR} 中获得'
-        output: 'FINALTECH_DIGITAL_GENERATOR'
-      2:
-        name: '{color:initiative}Production method'
-        lore:
-          - '{color:normal}Can be crafted in {id:FINALTECH_LOGIC_TO_DIGITAL_CONVERSION}'
-        output: 'FINALTECH_LOGIC_TO_DIGITAL_CONVERSION'
-      3:
-        name: '{color:initiative}Production method'
-        lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_LOGIC_CRAFTER}'
         output: 'FINALTECH_LOGIC_CRAFTER'
-      4:
+      2:
         name: '{color:initiative}Production method'
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
         output: 'FINALTECH_DIGIT_ADDER'
+      3:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
+      4:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be obtained in {id:FINALTECH_DIGITAL_GENERATOR}'
+        output: 'FINALTECH_DIGITAL_GENERATOR'
+      5:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_LOGIC_TO_DIGITAL_CONVERSION}'
+        output: 'FINALTECH_LOGIC_TO_DIGITAL_CONVERSION'
   FINALTECH_DIGITAL_ONE:
     name: '{color:prandom}数码 {color:conceal}- {color:number}1'
     info:
       1:
         name: '{color:initiative}生产方法'
         lore:
-          - '{color:normal}可以在 {id:FINALTECH_DIGITAL_GENERATOR} 中获得'
-        output: 'FINALTECH_DIGITAL_GENERATOR'
-      2:
-        name: '{color:initiative}Production method'
-        lore:
-          - '{color:normal}Can be crafted in {id:FINALTECH_LOGIC_TO_DIGITAL_CONVERSION}'
-        output: 'FINALTECH_LOGIC_TO_DIGITAL_CONVERSION'
-      3:
-        name: '{color:initiative}Production method'
-        lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_LOGIC_CRAFTER}'
         output: 'FINALTECH_LOGIC_CRAFTER'
-      4:
+      2:
         name: '{color:initiative}Production method'
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
         output: 'FINALTECH_DIGIT_ADDER'
+      3:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
+      4:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be obtained in {id:FINALTECH_DIGITAL_GENERATOR}'
+        output: 'FINALTECH_DIGITAL_GENERATOR'
+      5:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_LOGIC_TO_DIGITAL_CONVERSION}'
+        output: 'FINALTECH_LOGIC_TO_DIGITAL_CONVERSION'
   FINALTECH_DIGITAL_TWO:
     name: '{color:prandom}数码 {color:conceal}- {color:number}2'
     info:
       1:
         name: '{color:initiative}生产方法'
         lore:
-          - '{color:normal}可以在 {id:FINALTECH_DIGITAL_GENERATOR} 中获得'
-        output: 'FINALTECH_DIGITAL_GENERATOR'
+          - '{color:normal}Can be crafted in {id:FINALTECH_LOGIC_CRAFTER}'
+        output: 'FINALTECH_LOGIC_CRAFTER'
       2:
         name: '{color:initiative}Production method'
         lore:
-          - '{color:normal}Can be crafted in {id:FINALTECH_LOGIC_CRAFTER}'
-        output: 'FINALTECH_LOGIC_CRAFTER'
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
+        output: 'FINALTECH_DIGIT_ADDER'
       3:
         name: '{color:initiative}生产方法'
         lore:
-          - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
-        output: 'FINALTECH_DIGIT_ADDER'
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
+      4:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be obtained in {id:FINALTECH_DIGITAL_GENERATOR}'
+        output: 'FINALTECH_DIGITAL_GENERATOR'
   FINALTECH_DIGITAL_THREE:
     name: '{color:prandom}数码 {color:conceal}- {color:number}3'
     info:
       1:
         name: '{color:initiative}生产方法'
         lore:
-          - '{color:normal}可以在 {id:FINALTECH_DIGITAL_GENERATOR} 中获得'
-        output: 'FINALTECH_DIGITAL_GENERATOR'
-      2:
-        name: '{color:initiative}Production method'
-        lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_LOGIC_CRAFTER}'
         output: 'FINALTECH_LOGIC_CRAFTER'
-      3:
+      2:
         name: '{color:initiative}Production method'
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
         output: 'FINALTECH_DIGIT_ADDER'
+      3:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
+      4:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be obtained in {id:FINALTECH_DIGITAL_GENERATOR}'
+        output: 'FINALTECH_DIGITAL_GENERATOR'
   FINALTECH_DIGITAL_FOUR:
     name: '{color:prandom}数码 {color:conceal}- {color:number}4'
     info:
@@ -691,6 +753,11 @@ items:
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
         output: 'FINALTECH_DIGIT_ADDER'
+      3:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
   FINALTECH_DIGITAL_FIVE:
     name: '{color:prandom}数码 {color:conceal}- {color:number}5'
     info:
@@ -704,6 +771,11 @@ items:
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
         output: 'FINALTECH_DIGIT_ADDER'
+      3:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
   FINALTECH_DIGITAL_SIX:
     name: '{color:prandom}数码 {color:conceal}- {color:number}6'
     info:
@@ -717,6 +789,11 @@ items:
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
         output: 'FINALTECH_DIGIT_ADDER'
+      3:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
   FINALTECH_DIGITAL_SEVEN:
     name: '{color:prandom}数码 {color:conceal}- {color:number}7'
     info:
@@ -730,6 +807,11 @@ items:
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
         output: 'FINALTECH_DIGIT_ADDER'
+      3:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
   FINALTECH_DIGITAL_EIGHT:
     name: '{color:prandom}数码 {color:conceal}- {color:number}8'
     info:
@@ -743,6 +825,11 @@ items:
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
         output: 'FINALTECH_DIGIT_ADDER'
+      3:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
   FINALTECH_DIGITAL_NINE:
     name: '{color:prandom}数码 {color:conceal}- {color:number}9'
     info:
@@ -756,6 +843,11 @@ items:
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
         output: 'FINALTECH_DIGIT_ADDER'
+      3:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
   FINALTECH_DIGITAL_TEN:
     name: '{color:prandom}数码 {color:conceal}- {color:number}10'
     info:
@@ -769,6 +861,11 @@ items:
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
         output: 'FINALTECH_DIGIT_ADDER'
+      3:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
   FINALTECH_DIGITAL_ELEVEN:
     name: '{color:prandom}数码 {color:conceal}- {color:number}11'
     info:
@@ -782,6 +879,11 @@ items:
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
         output: 'FINALTECH_DIGIT_ADDER'
+      3:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
   FINALTECH_DIGITAL_TWELVE:
     name: '{color:prandom}数码 {color:conceal}- {color:number}12'
     info:
@@ -795,6 +897,11 @@ items:
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
         output: 'FINALTECH_DIGIT_ADDER'
+      3:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
   FINALTECH_DIGITAL_THIRTEEN:
     name: '{color:prandom}数码 {color:conceal}- {color:number}13'
     info:
@@ -808,6 +915,11 @@ items:
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
         output: 'FINALTECH_DIGIT_ADDER'
+      3:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
   FINALTECH_DIGITAL_FOURTEEN:
     name: '{color:prandom}数码 {color:conceal}- {color:number}14'
     info:
@@ -821,6 +933,11 @@ items:
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
         output: 'FINALTECH_DIGIT_ADDER'
+      3:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
   FINALTECH_DIGITAL_FIFTEEN:
     name: '{color:prandom}数码 {color:conceal}- {color:number}15'
     info:
@@ -834,6 +951,11 @@ items:
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGIT_ADDER}'
         output: 'FINALTECH_DIGIT_ADDER'
+      3:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
+        output: 'FINALTECH_DIGITAL_EXTRACTION'
   FINALTECH_MACHINE_CHARGE_CARD_L1:
     name: '{color:prandom}机器充能卡 {color:conceal}- {color:number}L1'
     info:
@@ -930,6 +1052,66 @@ items:
         name: '{color:negative}限制'
         lore:
           - '{color:normal}每次使用损失 {color:number}10%的生命值 {color:normal}和 {color:number}1点经验{color:normal}'
+  FINALTECH_ENERGY_CARD_K:
+    name: '{color:prandom}Energy Card {color:conceal}- {color:positive}1K'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Charge machine for {color:number}{1} J'
+      2:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Support expanded capacitor'
+        output: 'FINALTECH_SMALL_EXPANDED_CAPACITOR'
+  FINALTECH_ENERGY_CARD_M:
+    name: '{color:prandom}Energy Card {color:conceal}- {color:positive}1M'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Charge machine for {color:number}{1} J'
+      2:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Support expanded capacitor'
+        output: 'FINALTECH_SMALL_EXPANDED_CAPACITOR'
+  FINALTECH_ENERGY_CARD_B:
+    name: '{color:prandom}Energy Card {color:conceal}- {color:positive}1B'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Charge machine for {color:number}{1} J'
+      2:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Support expanded capacitor'
+        output: 'FINALTECH_SMALL_EXPANDED_CAPACITOR'
+  FINALTECH_ENERGY_CARD_T:
+    name: '{color:prandom}Energy Card {color:conceal}- {color:positive}1T'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Charge machine for {color:number}{1} J'
+      2:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Support expanded capacitor'
+        output: 'FINALTECH_SMALL_EXPANDED_CAPACITOR'
+  FINALTECH_ENERGY_CARD_Q:
+    name: '{color:prandom}Energy Card {color:conceal}- {color:positive}1Q'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Charge machine for {color:number}{1} J'
+      2:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Support expanded capacitor'
+        output: 'FINALTECH_SMALL_EXPANDED_CAPACITOR'
   FINALTECH_MAGIC_HYPNOTIC:
     name: '{color:prandom}魔法催眠药'
     info:
@@ -990,7 +1172,7 @@ items:
       1:
         name: '{color:positive}用途'
         lore:
-          - '{color:normal}查看机器交互情况'
+          - '{color:normal}To see how machine interact with others'
     void-icon:
       name: '{color:normal}无交互'
     input-icon:
@@ -999,6 +1181,13 @@ items:
       name: '{color:normal}输出槽'
     in-and-out-icon:
       name: '{color:normal}输入和输出槽'
+  FINALTECH_ROUTE_VIEWER:
+    name: '{color:prandom}Route Viewer'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:action}[Right-click] {color:normal}Toggle route display for some machines'
   FINALTECH_LOCATION_RECORDER:
     name: '{color:prandom}位置记录仪'
     info:
@@ -1014,9 +1203,19 @@ items:
         output: 'FINALTECH_LOCATION_TRANSFER'
   FINALTECH_MACHINE_CONFIGURATOR:
     name: '{color:prandom}机器配置仪'
-    lore:
-      - '{color:action}[右击] {color:normal}将配置粘贴至相同类型的机器上'
-      - '{color:action}[Shift + 右击] {color:normal}复制机器的配置'
+    info:
+      1:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:action}[Right-click] {color:normal}Paste config to th machine you are looking at'
+          - '{color:action}[Shift + Right-click] {color:normal}Copy the machine config you are looking at'
+      2:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Machines in same group can share their config'
+          - ''
+          - '{color:conceal}For example, you can copy the config of {id:CARGO_NODE_OUTPUT_ADVANCED}'
+          - '{color:conceal}Then paste it to {id:CARGO_NODE_INPUT}'
   FINALTECH_PORTABLE_ENERGY_STORAGE:
     name: '{color:prandom}便携式能量存储器'
     info:
@@ -1025,6 +1224,16 @@ items:
         lore:
           - '{color:action}[右击] {color:normal}向机器中注入能量'
           - '{color:action}[Shift + 右击] {color:normal}回收一台机器的所有能量'
+      2:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Can be used in {id:FINALTECH_ENERGY_TABLE}'
+        output: 'FINALTECH_ENERGY_TABLE'
+      3:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Can be used to craft energy card'
+        output: 'FINALTECH_ENERGY_CARD_K'
     status:
       lore:
         - '{color:normal}已储存能量: {color:number}{1} J'
@@ -1084,8 +1293,6 @@ items:
         name: '{color:passive}机制'
         lore:
           - '{color:normal}Drop extra exp instead while breaking block'
-  FINALTECH_SWORD1:
-    name: '{color:prandom}乱序剑'
   FINALTECH_BASIC_GENERATOR:
     name: '{color:prandom}基础供电机'
     info:
@@ -1108,8 +1315,8 @@ items:
           - '{color:normal}无法给电容和发电机充电'
     status:
       lore:
-        - '{color:normal}总充电量: {color:number}{1} J'
-        - '{color:normal}生效机器: {color:number}{2} 台'
+        - '{color:normal}Affected Machine: {color:number}{1}'
+        - '{color:normal}Total Energy: {color:number}{2} J'
   FINALTECH_ADVANCED_GENERATOR:
     name: '{color:prandom}高级供电机'
     info:
@@ -1132,8 +1339,8 @@ items:
           - '{color:normal}无法给电容和发电机充电'
     status:
       lore:
-        - '{color:normal}总充电量: {color:number}{1} J'
-        - '{color:normal}生效机器: {color:number}{2} 台'
+        - '{color:normal}Affected Machine: {color:number}{1}'
+        - '{color:normal}Total Energy: {color:number}{2} J'
   FINALTECH_CARBONADO_GENERATOR:
     name: '{color:prandom}黑金刚石供电机'
     info:
@@ -1156,8 +1363,8 @@ items:
           - '{color:normal}无法给电容和发电机充电'
     status:
       lore:
-        - '{color:normal}总充电量: {color:number}{1} J'
-        - '{color:normal}生效机器: {color:number}{2} 台'
+        - '{color:normal}Affected Machine: {color:number}{1}'
+        - '{color:normal}Total Energy: {color:number}{2} J'
   FINALTECH_ENERGIZED_GENERATOR:
     name: '{color:prandom}充能供电机'
     info:
@@ -1180,8 +1387,8 @@ items:
           - '{color:normal}无法给电容和发电机充电'
     status:
       lore:
-        - '{color:normal}总充电量: {color:number}{1} J'
-        - '{color:normal}生效机器: {color:number}{2} 台'
+        - '{color:normal}Affected Machine: {color:number}{1}'
+        - '{color:normal}Total Energy: {color:number}{2} J'
   FINALTECH_ENERGIZED_STACK_GENERATOR:
     name: '{color:prandom}充能供电机组'
     info:
@@ -1204,8 +1411,8 @@ items:
           - '{color:normal}无法给电容和发电机充电'
     status:
       lore:
-        - '{color:normal}总充电量: {color:number}{1} J'
-        - '{color:normal}生效机器: {color:number}{2} 台'
+        - '{color:normal}Affected Machine: {color:number}{1}'
+        - '{color:normal}Total Energy: {color:number}{2} J'
   FINALTECH_OVERLOADED_GENERATOR:
     name: '{color:prandom}过载供电机'
     info:
@@ -1228,8 +1435,8 @@ items:
           - '{color:normal}无法给电容和发电机充电'
     status:
       lore:
-        - '{color:normal}总充电量: {color:number}{1} J'
-        - '{color:normal}生效机器: {color:number}{2} 台'
+        - '{color:normal}Affected Machine: {color:number}{1}'
+        - '{color:normal}Total Energy: {color:number}{2} J'
   FINALTECH_ORDERED_DUST_GENERATOR:
     name: '{color:prandom}有序尘埃供电机'
     info:
@@ -1245,6 +1452,7 @@ items:
           - '{color:normal}消耗 {id:FINALTECH_UNORDERED_DUST}{color:normal}: {color:number}当前发电量 + 1'
           - '{color:normal}消耗 {id:FINALTECH_PHONY}{color:normal}: {color:number}当前发电量 * 2'
           - '{color:negative}若无有效物品消耗: {color:number}当前发电量 ÷ 2'
+        output: 'FINALTECH_PHONY'
     status:
       lore:
         - '{color:normal}Stored Energy: {color:number}{3} J'
@@ -1296,28 +1504,6 @@ items:
       lore:
         - '{color:normal}储存电量: {color:number}{1} J'
         - '{color:normal}带电能量: {color:number}{2} J'
-  FINALTECH_BASIC_CHARGE_INCREASE_CAPACITOR:
-    name: '{color:prandom}基础充电增益电容'
-    info:
-      1:
-        name: '{color:passive}机制'
-        lore:
-          - '{color:normal}可储存电量: {color:number}{1}J {color:normal}'
-          - '{color:normal}充电效率: {color:number}{2}%J {color:normal}'
-    status:
-      lore:
-        - '{color:normal}储存电量: {color:number}{1} J'
-  FINALTECH_BASIC_CONSUME_REDUCE_CAPACITOR:
-    name: '{color:prandom}基础耗电减免电容'
-    info:
-      1:
-        name: '{color:passive}机制'
-        lore:
-          - '{color:normal}可储存电量: {color:number}{1}J {color:normal}'
-          - '{color:normal}耗电减免效率: {color:number}{2}%J {color:normal}'
-    status:
-      lore:
-        - '{color:normal}储存电量: {color:number}{1} J'
   FINALTECH_SMALL_EXPANDED_CAPACITOR:
     name: '{color:prandom}小型扩展电容'
     info:
@@ -1327,6 +1513,11 @@ items:
           - '{color:normal}单组流转电量: {color:number}{1}J {color:normal}'
           - '{color:normal}可流转电容组数: {color:number}{2}S {color:normal}'
           - '{color:normal}充电效率: {color:number}{3}%J {color:normal}'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Be compatible with {id:FINALTECH_PORTABLE_ENERGY_STORAGE}'
+        output: 'FINALTECH_PORTABLE_ENERGY_STORAGE'
     status:
       lore:
         - '{color:normal}可传输电量: {color:number}{1} J'
@@ -1340,6 +1531,11 @@ items:
           - '{color:normal}单组流转电量: {color:number}{1}J {color:normal}'
           - '{color:normal}可流转电容组数: {color:number}{2}S {color:normal}'
           - '{color:normal}充电效率: {color:number}{3}%J {color:normal}'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Be compatible with {id:FINALTECH_PORTABLE_ENERGY_STORAGE}'
+        output: 'FINALTECH_PORTABLE_ENERGY_STORAGE'
     status:
       lore:
         - '{color:normal}可传输电量: {color:number}{1} J'
@@ -1353,6 +1549,11 @@ items:
           - '{color:normal}单组流转电量: {color:number}{1}J {color:normal}'
           - '{color:normal}可流转电容组数: {color:number}{2}S {color:normal}'
           - '{color:normal}充电效率: {color:number}{3}%J {color:normal}'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Be compatible with {id:FINALTECH_PORTABLE_ENERGY_STORAGE}'
+        output: 'FINALTECH_PORTABLE_ENERGY_STORAGE'
     status:
       lore:
         - '{color:normal}可传输电量: {color:number}{1} J'
@@ -1366,6 +1567,11 @@ items:
           - '{color:normal}单组流转电量: {color:number}{1}J {color:normal}'
           - '{color:normal}可流转电容组数: {color:number}{2}S {color:normal}'
           - '{color:normal}充电效率: {color:number}{3}%J {color:normal}'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Be compatible with {id:FINALTECH_PORTABLE_ENERGY_STORAGE}'
+        output: 'FINALTECH_PORTABLE_ENERGY_STORAGE'
     status:
       lore:
         - '{color:normal}可传输电量: {color:number}{1} J'
@@ -1379,6 +1585,11 @@ items:
           - '{color:normal}单组流转电量: {color:number}{1}J {color:normal}'
           - '{color:normal}可流转电容组数: {color:number}{2}S {color:normal}'
           - '{color:normal}充电效率: {color:number}{3}%J {color:normal}'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Be compatible with {id:FINALTECH_PORTABLE_ENERGY_STORAGE}'
+        output: 'FINALTECH_PORTABLE_ENERGY_STORAGE'
     status:
       lore:
         - '{color:normal}可传输电量: {color:number}{1} J'
@@ -1392,6 +1603,11 @@ items:
           - '{color:normal}单组流转电量: {color:number}{1}J {color:normal}'
           - '{color:normal}可流转电容组数: {color:number}{2}S {color:normal}'
           - '{color:normal}充电效率: {color:number}{3}%J {color:normal}'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Be compatible with {id:FINALTECH_PORTABLE_ENERGY_STORAGE}'
+        output: 'FINALTECH_PORTABLE_ENERGY_STORAGE'
     status:
       lore:
         - '{color:normal}可传输电量: {color:number}{1} J'
@@ -1405,6 +1621,11 @@ items:
           - '{color:normal}单组流转电量: {color:number}{1}J {color:normal}'
           - '{color:normal}可流转电容组数: {color:number}{2}S {color:normal}'
           - '{color:normal}充电效率: {color:number}{3}%J {color:normal}'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Be compatible with {id:FINALTECH_PORTABLE_ENERGY_STORAGE}'
+        output: 'FINALTECH_PORTABLE_ENERGY_STORAGE'
     status:
       lore:
         - '{color:normal}可传输电量: {color:number}{1} J'
@@ -1418,32 +1639,15 @@ items:
           - '{color:normal}单组流转电量: {color:number}{1}J {color:normal}'
           - '{color:normal}可流转电容组数: {color:number}{2}S {color:normal}'
           - '{color:normal}充电效率: {color:number}{3}%J {color:normal}'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Be compatible with {id:FINALTECH_PORTABLE_ENERGY_STORAGE}'
+        output: 'FINALTECH_PORTABLE_ENERGY_STORAGE'
     status:
       lore:
         - '{color:normal}可传输电量: {color:number}{1} J'
         - '{color:normal}储能堆栈: {color:number}{2} S'
-  FINALTECH_ADVANCED_CHARGE_INCREASE_CAPACITOR:
-    name: '{color:prandom}高级充电增益电容'
-    info:
-      1:
-        name: '{color:passive}机制'
-        lore:
-          - '{color:normal}可储存电量: {color:number}{1} J {color:normal}'
-          - '{color:normal}充电效率: {color:number}{2}% J {color:normal}'
-    status:
-      lore:
-        - '{color:normal}储存电量: {color:number}{1} J'
-  FINALTECH_ADVANCED_CONSUME_REDUCE_CAPACITOR:
-    name: '{color:prandom}高级耗电减免电容'
-    info:
-      1:
-        name: '{color:passive}机制'
-        lore:
-          - '{color:normal}可储存电量: {color:number}{1} J {color:normal}'
-          - '{color:normal}耗电减免效率: {color:number}{2}% J {color:normal}'
-    status:
-      lore:
-        - '{color:normal}储存电量: {color:number}{1} J'
   FINALTECH_TIME_CAPACITOR:
     name: '{color:prandom}Time Capacitor'
     info:
@@ -1514,10 +1718,6 @@ items:
           - '{color:normal}并忽略满电量机器'
           - ''
           - '{color:normal}范围: {color:number}{1} 格'
-      2:
-        name: '{color:negative}限制'
-        lore:
-          - '{color:normal}无法给其它电容器输电'
     status:
       lore:
         - '{color:normal}有效机器: {color:number}{1} 台'
@@ -1558,6 +1758,7 @@ items:
         lore:
           - '{color:normal}可储电量: {color:number}{1} J'
           - '{color:normal}充满电后转换为 {id:FINALTECH_VARIABLE_WIRE_CAPACITOR} {color:normal}'
+        output: 'FINALTECH_VARIABLE_WIRE_CAPACITOR'
     status:
       lore:
         - '{color:normal}Stored Energy: {color:number}{1} J'
@@ -1569,28 +1770,29 @@ items:
         lore:
           - '{color:normal}可储电量: {color:number}{1} J'
           - '{color:normal}耗完电后转换为 {id:FINALTECH_VARIABLE_WIRE_RESISTANCE} {color:normal}'
+        output: 'FINALTECH_VARIABLE_WIRE_RESISTANCE'
     status:
       lore:
         - '{color:normal}Stored Energy: {color:number}{1} J'
-  FINALTECH_ENERGY_ACCELERATOR:
-    name: '{color:prandom}能量加速器'
+  FINALTECH_ENERGIZED_ACCELERATOR:
+    name: '{color:prandom}Energized Accelerator'
     info:
       1:
-        name: '{color:passive}机制'
+        name: '{color:passive}Mechanism'
         lore:
-          - '{color:normal}消耗能量使周围的机器工作效率翻倍'
-          - '{color:normal}范围: {color:number}{1} 格'
-          - '{color:normal}电容量: {color:number}{2} J'
+          - '{color:normal}Consume energy to make around machine work more times'
+          - '{color:normal}Range: {color:number}{1}'
+          - '{color:normal}Capacity: {color:number}{2} J'
       2:
-        name: '{color:negative}限制'
+        name: '{color:negative}Limit'
         lore:
-          - '{color:normal}仅支持可储能的机器'
+          - '{color:normal}Only support machine that can store energy'
     status:
       lore:
-        - '{color:normal}储存电量: {color:number}{1} J'
-        - '{color:normal}加速机器: {color:number}{2} 台'
-        - '{color:normal}加速平均次数: {color:number}{3} 次'
-        - '{color:normal}加速总次数: {color:number}{4} 次'
+        - '{color:normal}Stored Energy: {color:number}{1} J'
+        - '{color:normal}Accelerated Machines: {color:number}{2}'
+        - '{color:normal}Accelerated Round Times: {color:number}{3}'
+        - '{color:normal}Accelerated Total Times: {color:number}{4}'
   FINALTECH_OVERLOADED_ACCELERATOR:
     name: '{color:prandom}过载加速器'
     info:
@@ -1605,8 +1807,8 @@ items:
           - '{color:normal}仅支持可储能的机器'
     status:
       lore:
-        - '{color:normal}加速机器: {color:number}{1} 台'
-        - '{color:normal}加速总次数: {color:number}{2} 次'
+        - '{color:normal}Available Machines: {color:number}{1}'
+        - '{color:normal}Accelerated Machines: {color:number}{2}'
   FINALTECH_NORMAL_STORAGE_UNIT:
     name: '{color:prandom}储存单元'
     info:
@@ -1636,7 +1838,7 @@ items:
       2:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}每次与其他机器交互时仅能输入一个物品槽'
+          - '{color:normal}Can only input one slot of items while being interacted by other machine every times'
   FINALTECH_STACK_STORAGE_UNIT:
     name: '{color:prandom}储存单元 {color:conceal}- {color:positive}堆栈'
     info:
@@ -1663,7 +1865,7 @@ items:
       3:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}每次与其他机器交互时仅能输入一个物品槽'
+          - '{color:normal}Can only input one slot of items while being interacted by other machine every times'
   FINALTECH_DIVIDED_STACK_STORAGE_UNIT:
     name: '{color:prandom}储存单元 {color:conceal}- {color:positive}分支 | 堆栈'
     info:
@@ -1690,7 +1892,7 @@ items:
       2:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}每次与其他机器交互时仅能输入一个物品槽'
+          - '{color:normal}Can only input one slot of items while being interacted by other machine every times'
       3:
         name: '{color:passive}机制'
         lore:
@@ -1705,7 +1907,7 @@ items:
       2:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}当其他机器向其输入物品时会随机地进行交互'
+          - '{color:normal}Will be randomly interacted while inputting item to it by other machines'
   FINALTECH_RANDOM_OUTPUT_STORAGE_UNIT:
     name: '{color:prandom}储存单元 {color:conceal}- {color:positive}随机输出'
     info:
@@ -1716,7 +1918,7 @@ items:
       2:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}当其他机器向其输出物品时会随机地进行交互'
+          - '{color:normal}Will be randomly interacted while outputting item from it by other machines'
   FINALTECH_RANDOM_ACCESS_STORAGE_UNIT:
     name: '{color:prandom}储存单元 {color:conceal}- {color:positive}随机存取'
     info:
@@ -1814,7 +2016,7 @@ items:
       1:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}右击查看指向的粘液科技机器'
+          - '{color:normal}Right click it to open slimefun machine it is looking at'
           - '{color:normal}范围: {color:number}{1}格'
   FINALTECH_CONSUMABLE_REMOTE_ACCESSOR:
     name: '{color:prandom}Remote Accessor {color:conceal}- {color:positive}Consumable'
@@ -1822,8 +2024,8 @@ items:
       1:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}右键点击它进行配置'
-          - '{color:normal}右击查看指向的粘液科技机器'
+          - '{color:normal}Right click it to config it by using digital items'
+          - '{color:normal}Right click it to open slimefun machine it is looking at'
         output: 'FINALTECH_DIGITAL_ZERO'
   FINALTECH_CONFIGURABLE_REMOTE_ACCESSOR:
     name: '{color:prandom}远程访问者 {color:conceal}- {color:positive}可配置'
@@ -1831,8 +2033,8 @@ items:
       1:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}右键点击它进行配置'
-          - '{color:normal}右击查看指向的粘液科技机器'
+          - '{color:normal}Right click it to config it by using digital items'
+          - '{color:normal}Right click it to open slimefun machine it is looking at'
         output: 'FINALTECH_DIGITAL_ZERO'
   FINALTECH_EXPANDED_CONSUMABLE_REMOTE_ACCESSOR:
     name: '{color:prandom}Expanded Remote Accessor {color:conceal}- {color:positive}Consumable'
@@ -1840,8 +2042,8 @@ items:
       1:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}右键点击它进行配置'
-          - '{color:normal}右击查看指向的粘液科技机器'
+          - '{color:normal}Right click it to config it by using digital items'
+          - '{color:normal}Right click it to open slimefun machine it is looking at'
         output: 'FINALTECH_DIGITAL_ZERO'
   FINALTECH_EXPANDED_CONFIGURABLE_REMOTE_ACCESSOR:
     name: '{color:prandom}扩展远程访问器 {color:conceal}- {color:positive}可配置'
@@ -1849,9 +2051,16 @@ items:
       1:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}右键点击它进行配置'
-          - '{color:normal}右击查看指向的粘液科技机器'
+          - '{color:normal}Right click it to config it by using digital items'
+          - '{color:normal}Right click it to open slimefun machine it is looking at'
         output: 'FINALTECH_DIGITAL_ZERO'
+  FINALTECH_RANDOM_ACCESSOR:
+    name: '{color:prandom}Random Accessor'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Right click it to randomly open slimefun machine around it'
   FINALTECH_AREA_ACCESSOR:
     name: '{color:prandom}区域存取仪'
     info:
@@ -1879,7 +2088,7 @@ items:
       1:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}右键点击它进行配置'
+          - '{color:normal}Right click it to config it by using digital items'
           - '{color:normal}右键点击它传送到目标位置'
         output: 'FINALTECH_DIGITAL_ZERO'
   FINALTECH_CONFIGURABLE_TRANSPORTER:
@@ -1888,7 +2097,7 @@ items:
       1:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}右键点击它进行配置'
+          - '{color:normal}Right click it to config it by using digital items'
           - '{color:normal}右键点击它传送到目标位置'
         output: 'FINALTECH_DIGITAL_ZERO'
   FINALTECH_EXPANDED_CONSUMABLE_TRANSPORTER:
@@ -1897,7 +2106,7 @@ items:
       1:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}右键点击它进行配置'
+          - '{color:normal}Right click it to config it by using digital items'
           - '{color:normal}右键点击它传送到目标位置'
         output: 'FINALTECH_DIGITAL_ZERO'
   FINALTECH_EXPANDED_CONFIGURABLE_TRANSPORTER:
@@ -1906,7 +2115,7 @@ items:
       1:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}右键点击它进行配置'
+          - '{color:normal}Right click it to config it by using digital items'
           - '{color:normal}右键点击它传送到目标位置'
         output: 'FINALTECH_DIGITAL_ZERO'
   FINALTECH_LOGIC_COMPARATOR_NOTNULL:
@@ -2005,8 +2214,19 @@ items:
         output: 'FINALTECH_LOGIC_FALSE'
   FINALTECH_LOGIC_CRAFTER:
     name: '{color:prandom}逻辑合成台'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}User logic item to craft digit item'
+        output: 'FINALTECH_DIGITAL_ZERO'
   FINALTECH_DIGIT_ADDER:
     name: '{color:prandom}数码加法机'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Add two digit item to get one new digit item'
   FINALTECH_BASIC_FRAME_MACHINE:
     name: '{color:prandom}基础机械框架'
     info:
@@ -2183,7 +2403,7 @@ items:
         name: '{color:passive}机制'
         lore:
           - '{color:normal}当所有物品槽都有物品时'
-          - '{color:normal}且每个物品槽都有不同数量的物品'
+          - '{color:normal}Every slot is with different item amount'
           - '{color:normal}会使输出 {id:FINALTECH_UNORDERED_DUST} 的概率更大'
         output: 'FINALTECH_UNORDERED_DUST'
       3:
@@ -2197,8 +2417,20 @@ items:
         name: '{color:negative}限制'
         lore:
           - '{color:normal}它会在输出一个物品之后休眠一段时间'
+  FINALTECH_BEDROCK_CRAFT_TABLE:
+    name: '{color:prandom}Bedrock Craft table'
+    info:
+      1:
+        name: '{color:stress}Introduction'
+        lore:
+          - '{color:normal}Put item orderly to craft'
   FINALTECH_MATRIX_CRAFTING_TABLE:
     name: '{color:prandom}矩阵合成台'
+    info:
+      1:
+        name: '{color:stress}Introduction'
+        lore:
+          - '{color:normal}Put item orderly to craft'
     parse-icon:
       name: '{color:negative}无效'
     show-icon:
@@ -2206,11 +2438,21 @@ items:
         - '{color:normal}匹配数量: {color:number}{1}'
   FINALTECH_ITEM_DISMANTLE_TABLE:
     name: '{color:prandom}物品拆解台'
+    info:
+      1:
+        name: '{color:stress}Introduction'
+        lore:
+          - '{color:normal}Restore item to its raw materials'
     status-icon:
       lore:
         - '{color:normal}收费： {color:number}{1} {color:conceal}/ {color:number}{2}'
   FINALTECH_AUTO_ITEM_DISMANTLE_TABLE:
     name: '{color:prandom}自动拆除表'
+    info:
+      1:
+        name: '{color:stress}Introduction'
+        lore:
+          - '{color:normal}Restore item to its raw materials'
   FINALTECH_EQUIVALENT_EXCHANGE_TABLE:
     name: '{color:prandom}等价交换台'
     info:
@@ -2219,6 +2461,13 @@ items:
         lore:
           - '{color:normal}输入物品后，该物品会被转化为价值并被该机器记录'
           - '{color:normal}输入 {id:FINALTECH_UNORDERED_DUST} {color:normal}时，消耗随机价值并随机输出与消耗价值等价的物品'
+        output: 'FINALTECH_UNORDERED_DUST'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}{id:FINALTECH_BUG} {color:normal}may be randomly generated'
+          - '{color:normal}and all stored value will be cleared at the same time'
+        output: 'FINALTECH_BUG'
     parse-border-icon:
       name: ' '
     parse-result-icon:
@@ -2243,7 +2492,7 @@ items:
       1:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}输入 {color:number}{1} {color:normal}个相同的物品以输出一个该物品的{id:FINALTECH_COPY_CARD} {color:normal}'
+          - '{color:normal}Use at least {color:number}{1} {color:normal}same items to craft one {id:FINALTECH_COPY_CARD} {color:normal}of specified item'
         output: 'FINALTECH_COPY_CARD'
       2:
         name: '{color:passive}机制'
@@ -2295,6 +2544,24 @@ items:
         output: 'FINALTECH_COPY_CARD'
   FINALTECH_CARD_OPERATION_TABLE:
     name: '{color:prandom}卡操台'
+    entropy:
+      info-icon:
+        name: '{color:passive}Entropy'
+        lore:
+          - '{color:normal}Use {id:FINALTECH_ENTROPY} {color:normal}to replace item in {id:FINALTECH_STORAGE_CARD} {color:normal}or {id:FINALTECH_COPY_CARD}'
+        output: 'FINALTECH_ENTROPY'
+    craft-infinity-storage-card:
+      info-icon:
+        name: '{color:passive}Craft Infinity Storage Card'
+        lore:
+          - '{color:normal}Use {id:FINALTECH_PHONY} {color:normal}and {id:FINALTECH_COPY_CARD} {color:normal}to craft one {id:FINALTECH_STORAGE_CARD} {color:normal}with infinity amount'
+        output: 'FINALTECH_STORAGE_CARD'
+    distribute-storage-card:
+      info-icon:
+        name: '{color:passive}Distribute Storage Card'
+        lore:
+          - '{color:normal}Distribute item in one {id:FINALTECH_STORAGE_CARD} {color:normal}to another empty {id:FINALTECH_STORAGE_CARD}'
+        output: 'FINALTECH_STORAGE_CARD'
     merge-storage-card:
       info-icon:
         name: '{color:passive}合并存储卡'
@@ -2331,6 +2598,11 @@ items:
         - '{color:normal}请输入正确的物品'
   FINALTECH_ADVANCED_AUTO_CRAFT_FRAME:
     name: '{color:prandom}高级自动合成帧'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Parse how slimefun item is crafted'
     parse-icon:
       name: '{color:stress}Parse'
       lore:
@@ -2355,13 +2627,72 @@ items:
     parse-success-icon:
       name: '{color:positive}分析成功'
     parse-amount: '{color:conceal}数量: {1}'
+  FINALTECH_ETHER_MINER:
+    name: '{color:prandom}Ether Miner'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Cost {id:FINALTECH_UNORDERED_DUST} {color:normal}to start mine work'
+          - '{color:normal}You should scan the GEO resource first'
+        output: 'FINALTECH_UNORDERED_DUST'
+    status:
+      name: '{color:normal}Status'
+      lore:
+        - '{color:normal}Progress: {color:number}{1} {color:conceal}/ {color:number}{2}'
+        - '{color:normal}Ether in this chunk: {color:number}{3}'
+  FINALTECH_ENERGY_TABLE:
+    name: '{color:prandom}Energy Table'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Can input energy to {id:FINALTECH_PORTABLE_ENERGY_STORAGE}'
+          - '{color:normal}Can output energy from {id:FINALTECH_PORTABLE_ENERGY_STORAGE}'
+        output: 'FINALTECH_PORTABLE_ENERGY_STORAGE'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Use energy card to input energy'
+        output: 'FINALTECH_ENERGY_CARD_K'
+      3:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Output energy will be replaced by energy card'
+        output: 'FINALTECH_ENERGY_CARD_K'
+  FINALTECH_ENERGY_INPUT_TABLE:
+    name: '{color:prandom}Energy Input Table'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Can input energy to {id:FINALTECH_PORTABLE_ENERGY_STORAGE}'
+        output: 'FINALTECH_PORTABLE_ENERGY_STORAGE'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Use energy card to input energy'
+        output: 'FINALTECH_ENERGY_CARD_K'
+  FINALTECH_ENERGY_OUTPUT_TABLE:
+    name: '{color:prandom}Energy Output Table'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Can output energy from {id:FINALTECH_PORTABLE_ENERGY_STORAGE}'
+        output: 'FINALTECH_PORTABLE_ENERGY_STORAGE'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Output energy will be replaced by energy card'
+        output: 'FINALTECH_ENERGY_CARD_K'
   FINALTECH_ITEM_FIXER:
     name: '{color:prandom}Item Fixer'
     info:
       1:
         name: '{color:passive}机制'
         lore:
-          - '{color:normal}缓慢恢复输入项的耐久性'
+          - '{color:normal}Slowly restore durability of item'
   FINALTECH_COBBLESTONE_FACTORY:
     name: '{color:prandom}圆石工厂'
   FINALTECH_FUEL_CHARGER:
@@ -2380,12 +2711,69 @@ items:
           - '{color:normal}将其放置在熔炉下工作'
   FINALTECH_FUEL_OPERATOR:
     name: '{color:prandom}燃料控制台'
-    lore:
-      - '{color:normal}将其放置在机器下工作'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Place it below the machine to work'
   FINALTECH_OPERATION_ACCELERATOR:
     name: '{color:prandom}运行加速机'
-  FINALTECH_OPERATION_ACCELERATOR_INFINITY:
-    name: '{color:prandom}无限操作加速器'
+    info:
+      1:
+        name: '{color:passive}Introduction'
+        lore:
+          - '{color:normal}Place it below the machine to work'
+          - '{color:normal}It will accelerate the work progress of the machine by consuming energy'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Efficiency : {color:number}nd{1} {color:conceal}(n = item amount)'
+          - '{color:normal}Put {id:FINALTECH_OPERATION_ACCELERATOR} {color:normal}to increase efficiency'
+    status:
+      lore:
+        - '{color:normal}Stored Energy: {color:number}{1} J'
+        - '{color:normal}Times: {color:number}{2}'
+  FINALTECH_ENERGIZED_OPERATION_ACCELERATOR:
+    name: '{color:prandom}Energized Operation Accelerator'
+    info:
+      1:
+        name: '{color:passive}Introduction'
+        lore:
+          - '{color:normal}Place it below the machine to work'
+          - '{color:normal}It will accelerate the work progress of the machine by consuming energy'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Efficiency : {color:number}n * {1} + nd{2} {color:conceal}(n = item amount)'
+          - '{color:normal}Put {id:FINALTECH_ENERGIZED_OPERATION_ACCELERATOR} {color:normal}to increase efficiency'
+    status:
+      lore:
+        - '{color:normal}Stored Energy: {color:number}{1} J'
+        - '{color:normal}Times: {color:number}{2}'
+  FINALTECH_OVERLOADED_OPERATION_ACCELERATOR:
+    name: '{color:prandom}Overloaded Operation Accelerator'
+    info:
+      1:
+        name: '{color:passive}Introduction'
+        lore:
+          - '{color:normal}Place it below the machine to work'
+          - '{color:normal}It will accelerate the work progress of the machine by consuming energy'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Efficiency : {color:number}n * {1} + nd{2} {color:conceal}(n = item amount)'
+          - '{color:normal}Put {id:FINALTECH_OVERLOADED_OPERATION_ACCELERATOR} {color:normal}to increase efficiency'
+    status:
+      lore:
+        - '{color:normal}Stored Energy: {color:number}{1} J'
+        - '{color:normal}Times: {color:number}{2}'
+  FINALTECH_MATRIX_OPERATION_ACCELERATOR:
+    name: '{color:prandom}Matrix Operation Accelerator'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Place it below the furnace to work'
   FINALTECH_CURE_TOWER:
     name: '{color:prandom}治愈之塔'
     info:
@@ -2443,6 +2831,16 @@ items:
       lore:
         - '{color:normal}影响数量: {color:number}{1}'
         - '{color:normal}范围: {color:number}{2}'
+  FINALTECH_MANUAL_CRAFT_MACHINE:
+    name: '{color:random}Manual Craft Machine'
+    lore:
+      - '{color:positive}Do craft without the need to place items in order'
+      - ''
+      - '{color:normal}Cost energy to craft'
+      - '{color:normal}Recovery energy over time'
+      - ''
+      - '{color:negative}While the stored energy is more than half of capacity'
+      - '{color:negative}Stored energy will be reduced by half'
   FINALTECH_MANUAL_CRAFTING_TABLE:
     name: '{color:prandom}快捷原版工作台'
   FINALTECH_MANUAL_ENHANCED_CRAFTING_TABLE:
@@ -2475,12 +2873,6 @@ items:
     name: '{color:prandom}快捷古代祭坛'
   FINALTECH_MANUAL_HEATED_PRESSURE_CHAMBER:
     name: '{color:prandom}快捷加热压力舱'
-  FINALTECH_BASIC_COBBLE_FACTORY:
-    name: '{color:prandom}Basic Cobble Factory'
-  FINALTECH_BASIC_STONE_FACTORY:
-    name: '{color:prandom}基础刷石工厂'
-  FINALTECH_BASIC_DUST_FACTORY:
-    name: '{color:prandom}基础矿粉工厂'
   FINALTECH_BASIC_LOGIC_FACTORY:
     name: '{color:prandom}Basic Logic Factory'
   FINALTECH_ADVANCED_COMPOSTER:
@@ -2515,34 +2907,14 @@ items:
     name: '{color:prandom}高级碳压机'
   FINALTECH_ADVANCED_SMELTERY:
     name: '{color:prandom}Advanced Smeltery'
-  FINALTECH_ADVANCED_DUST_FACTORY:
-    name: '{color:prandom}高级矿粉工厂'
-  FINALTECH_DUST_CONVERSION:
-    name: '{color:prandom}粉尘转换机'
   FINALTECH_GRAVEL_CONVERSION:
     name: '{color:prandom}砂砾转换机'
   FINALTECH_SOUL_SAND_CONVERSION:
     name: '{color:prandom}灵魂沙转换机'
-  FINALTECH_CONCRETE_CONVERSION:
-    name: '{color:prandom}混凝土转换机'
-  FINALTECH_WOOL_CONVERSION:
-    name: '{color:prandom}羊毛转换机'
   FINALTECH_LOGIC_TO_DIGITAL_CONVERSION:
     name: '{color:prandom}逻辑数码转换机'
   FINALTECH_DIGITAL_EXTRACTION:
     name: '{color:prandom}数字提取器'
-  FINALTECH_ORE_EXTRACTION:
-    name: '{color:prandom}矿机'
-  FINALTECH_STONE_GENERATOR:
-    name: '{color:prandom}石头生成器'
-  FINALTECH_RAW_STONE_GENERATOR:
-    name: '{color:prandom}原石生成器'
-  FINALTECH_NETHER_STONE_GENERATOR:
-    name: '{color:prandom}下界岩生成器'
-  FINALTECH_PLANK_GENERATOR:
-    name: '{color:prandom}木板生成器'
-  FINALTECH_SAND_GENERATOR:
-    name: '{color:prandom}沙子生成器'
   FINALTECH_LIQUID_CARD_GENERATOR:
     name: '{color:prandom}流体卡生成器'
   FINALTECH_LOGIC_GENERATOR:
@@ -2556,36 +2928,55 @@ items:
         name: '{color:positive}用途'
         lore:
           - '{color:normal}???'
-  FINALTECH_MACHINE_CHARGE_CARD_INFINITY:
-    name: '{color:prandom}无尽机器充能卡'
+  FINALTECH_MATRIX_MACHINE_CHARGE_CARD:
+    name: '{color:prandom}Matrix Machine Charge Card'
     info:
       1:
-        name: '{color:positive}用途'
+        name: '{color:positive}Usage'
         lore:
-          - '{color:normal}使机器立即充入 {color:number}{1} J + {2}% 的电量'
-          - '{color:normal}百分比充电量不作用于电容'
-  FINALTECH_MACHINE_ACCELERATE_CARD_INFINITY:
-    name: '{color:prandom}无尽机器过载卡'
+          - '{color:normal}Charge machine for {color:number}{1} J + {2}% of machine capacity'
+          - '{color:normal}Percentage energy charge is not applicable to to capacitor and generator'
+  FINALTECH_MATRIX_MACHINE_ACCELERATE_CARD:
+    name: '{color:prandom}Matrix Machine Accelerate Card'
     info:
       1:
-        name: '{color:positive}用途'
+        name: '{color:positive}Usage'
         lore:
-          - '{color:normal}使机器立即工作 {color:number}{1} 次'
-  FINALTECH_MACHINE_ACTIVATE_CARD_L4:
-    name: '{color:prandom}无尽带电超频卡 {color:conceal}- {color:number}L4'
+          - '{color:normal}Make machine work immediately for {color:number}{1} times'
+  FINALTECH_MATRIX_MACHINE_ACTIVATE_CARD:
+    name: '{color:prandom}Machine Activate Card {color:conceal}- {color:number}L4'
     info:
       1:
-        name: '{color:positive}用途'
+        name: '{color:positive}Usage'
         lore:
-          - '{color:normal}使机器立即工作 {color:number}{1} 次'
-          - '{color:normal}每次工作前，充入{color:number}{2} J + {3}%的电量'
-          - '{color:normal}百分比充电量不作用于电容'
+          - '{color:normal}Make machine work immediately for {color:number}{1} times'
+          - '{color:normal}Before every work, it will be charged for {color:number}{2} J + {3}% of machine capacity'
+          - '{color:normal}Percentage energy charge is not applicable to to capacitor and generator'
       2:
-        name: '{color:negative}限制'
+        name: '{color:negative}Limit'
         lore:
-          - '{color:normal}每次使用损失 {color:number}所有生命值 {color:normal}'
+          - '{color:normal}Cost {color:number}1 life {color:normal}every use'
+  FINALTECH_MATRIX_QUANTITY_MODULE:
+    name: '{color:prandom}Matrix Quantity Module'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Can tweak some machines to an amazing efficiency'
+          - '{color:normal}Efficiency tweak is downward compatible'
   FINALTECH_ADVANCED_AUTO_CRAFT:
     name: '{color:prandom}高级自动合成机'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Parse how slimefun item is crafted'
+          - '{color:normal}Then craft it from its raw materials directly'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Support using {id:FINALTECH_COPY_CARD} {color:normal}to replace raw material'
+        output: 'FINALTECH_COPY_CARD'
     parse-icon:
       name: '{color:stress}分析'
       lore:
@@ -2611,8 +3002,18 @@ items:
     parse-amount: '{color:conceal}数量: {1}'
   FINALTECH_MULTI_FRAME_MACHINE:
     name: '{color:prandom}Multi Frame Machine'
+    info:
+      1:
+        name: '{color:stress}Mechanism'
+        lore:
+          - '{color:normal}Put machine item in the center slots to work'
   FINALTECH_MATRIX_ITEM_DISMANTLE_TABLE:
     name: '{color:prandom}矩阵物品拆解台'
+    info:
+      1:
+        name: '{color:stress}Introduction'
+        lore:
+          - '{color:normal}Restore item to its raw materials'
   FINALTECH_MATRIX_EXPANDED_CAPACITOR:
     name: '{color:prandom}Matrix扩展电容'
     info:
@@ -2677,7 +3078,7 @@ items:
         name: '{color:passive}机制'
         lore:
           - '{color:normal}输入粘液科技机器对应的物品'
-          - '{color:normal}使周围{color:number}{1}格 {color:normal}内的机器效率得到提升'
+          - '{color:normal}Then it will accelerate the machine in {color:number}{1} blocks range'
           - '{color:normal}总的加速次数等于物品数量'
       3:
         name: '{color:passive}机制'
@@ -2742,6 +3143,7 @@ items:
         lore:
           - '{color:normal}中间放入物品'
           - '{color:normal}消耗 {id:FINALTECH_UNORDERED_DUST} {color:normal}和 {id:FINALTECH_ORDERED_DUST} {color:normal}来复制物品'
+        output: 'FINALTECH_UNORDERED_DUST'
       2:
         name: '{color:passive}机制'
         lore:
@@ -2750,6 +3152,7 @@ items:
           - ''
           - '{color:normal}当进度与物品堆叠数之和等于{color:number}{1}'
           - '{color:normal}复制 {color:number}1个 {color:normal}输入的物品'
+        output: 'FINALTECH_ORDERED_DUST'
       3:
         name: '{color:passive}机制'
         lore:
@@ -2772,6 +3175,7 @@ items:
           - ''
           - '{color:negative}该机制在以下情况不起作用'
           - '{color:negative}进度 + 物品数量 > 64'
+        output: 'FINALTECH_PHONY'
     status:
       lore:
         - '{color:normal}进度: {color:number}{1} {color:normal}/ {color:number}{2}'
@@ -2788,26 +3192,57 @@ items:
       name: '{color:normal}下一页'
     match-item:
       lore: '{color:conceal}可以合成 {color:number}{1} {color:conceal}次'
-    warn:
-      - '玩家 [{5}] 隶属于 {1} [{2},{3},{4}] 正在快速点击快捷合成机'
-      - '其原因可能在于服务器网络，该行为可能会导致服务器滞后'
+  ENERGY_REGULATOR:
+    hologram:
+      multi-regulator: '&4Multiple Energy Regulators connected'
+      no-nodes: '&4No Energy Network found'
+    status:
+      lore:
+        - '{color:normal}Consumer:  {color:number}{1} {color:normal}| {color:number}{2} J {color:conceal}/ {color:number}{3} J'
+        - '{color:normal}Generator: {color:number}{4} {color:normal}| {color:number}{5} J {color:conceal}/ {color:number}{6} J'
+        - '{color:normal}Capacitor: {color:number}{7} {color:normal}| {color:number}{8} J {color:conceal}/ {color:number}{9} J'
+        - ''
+        - '{color:normal}Generated Energy: {color:number}{10} J'
+        - '{color:normal}Consumed Energy:  {color:number}{11} J'
+    statistics:
+      lore-location:
+        - '{color:normal}x: {color:number}{1}'
+        - '{color:normal}y: {color:number}{2}'
+        - '{color:normal}z: {color:number}{3}'
+      GENERATOR: 'Generator'
+      CAPACITOR: 'Capacitor'
+      CONSUMER: 'Consumer'
+      CONNECTOR: 'Connector'
+      NONE: 'None'
+      lore-type:
+        - '{color:normal}Energy Type: {color:passive}{1}'
+      lore-energy:
+        - '{color:normal}Energy: {color:number}{1} J {color:conceal}/ {color:normal}{2} J'
+      lore-generate:
+        - '{color:normal}Generated energy: {color:number}{1} J'
+      lore-consume:
+        - '{color:normal}Consumed energy: {color:number}{1} J'
 effect:
   VOID_CURSE:
     message:
       death: '{1} {color:normal}is swallowed by the void.'
 research:
-  LIQUID_CARD: '流体卡'
-  ORDER_DUST: '基础材料'
-  BUG: '试着抓住它！'
-  ENTROPY: '坏事'
-  ANNULAR: '高级材料'
-  PHONY: '好事'
-  LOGIC: '逻辑与数字'
-  MACHINE_CARD: '可爱的机器'
-  BOX: '光明与黑暗'
+  REPLACEABLE_CARD: 'replace item with card!'
+  ORDER_DUST: 'ordered universe'
+  BUG: 'crash me'
+  ENTROPY: 'more and more'
+  ETHER: 'infinity resource'
+  ANNULAR: 'new start'
+  PHONY: 'the reality of you'
+  LOGIC: 'logic and digital'
+  MACHINE_CARD: 'machine card'
+  BOX: 'light and dark'
   CONSUMABLE_ITEM: '消耗品'
-  SIMPLE_TOOL: '简单工具'
-  MACHINE_TOOL: '机械工具'
+  QUANTITY_MODULE: 'quantity module'
+  COPY_CARD: 'copy every thing'
+  ENERGY_CARD: 'electricity trading'
+  SIMPLE_TOOL: 'simple tool'
+  MACHINE_TOOL: 'machine tool'
 message:
   no-permission:
     location: '{color:negative}您没有此权限!'
