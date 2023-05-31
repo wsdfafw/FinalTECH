@@ -9,6 +9,10 @@
 
 它包括新的电力系统、新的货运系统以及目前的一些特殊机器和物品。
 
+This project is still in progress.
+
+<b>It's highly recommended to read the wiki before installing it to server. <https://github.com/ecro-fun/FinalTECH/wiki>
+
 ## 权限
 
 | 权限                          | 命令                      | 默认   | 描述                   |
@@ -18,23 +22,15 @@
 | finaltech.item.info         | /finaltech-info         | true | 手中显示 Slimefun 项目信息   |
 | finaltech.valid.item        | /finaltech-valid-item   | op   | 将特定项目转换为有效           |
 
-## 通知
-
-该项目仍在进行中，尚未完成。 今后将增加更多细节。
-
-欢迎在这里报告错误 <https://github.com/ecro-fun/FinalTECH/issues>
-
-## 维基
-
-几乎所有项目都在Slimefun指南中有内置描述。
-
-您可以在这里找到一些信息 <https://github.com/ecro-fun/FinalTECH/wiki>
-
 ## 多语种支持
 
 英语是默认的，并将随着时间的推移而保持。
 
-其他人可以在这里找到 <https://github.com/ecro-fun/FinalTECH/tree/master/language>
+It's welcome to upload others here <https://github.com/ecro-fun/FinalTECH/tree/master/src/main/resources/language>.
+
+## Bug report
+
+It's welcome to report bug here <https://github.com/ecro-fun/FinalTECH/issues>.
 
 ## 版本历史
 
