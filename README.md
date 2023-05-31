@@ -9,6 +9,10 @@ A Slimefun addon about making the world a little better.
 
 It includes new electric system, new cargo system, and some special machines and items now.
 
+This project is still in progress.
+
+<b>It's highly recommended to read the wiki before installing it to server. <https://github.com/ecro-fun/FinalTECH/wiki>
+
 ## Permission
 
 | permission | command | default | description |
@@ -18,23 +22,15 @@ It includes new electric system, new cargo system, and some special machines and
 | finaltech.item.info | /finaltech-info | true | show slimefun item info in hand |
 | finaltech.valid.item | /finaltech-valid-item | op | transform specific item to be valid |
 
-## Notice
-
-This project is still in progress and not fully finished yet. More details will be added in the future.
-
-It's welcome to report bug here <https://github.com/ecro-fun/FinalTECH/issues>
-
-## Wiki
-
-Almost all items have built-in description in slimefun guide.
-
-You can find some info here <https://github.com/ecro-fun/FinalTECH/wiki>
-
 ## Language support
 
 English is default and will be maintained over time.
 
-Others may be found here <https://github.com/ecro-fun/FinalTECH/tree/master/language>
+It's welcome to upload others here <https://github.com/ecro-fun/FinalTECH/tree/master/src/main/resources/language>.
+
+## Bug report
+
+It's welcome to report bug here <https://github.com/ecro-fun/FinalTECH/issues>.
 
 ## Version history
 
