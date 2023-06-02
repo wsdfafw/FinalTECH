@@ -9,9 +9,9 @@
 
 它包括新的电力系统、新的货运系统以及目前的一些特殊机器和物品。
 
-This project is still in progress.
+该项目仍在进行中。
 
-<b>It's highly recommended to read the wiki before installing it to server. <https://github.com/ecro-fun/FinalTECH/wiki>
+<b>它强烈建议在安装到服务器之前阅读wiki。 <https://github.com/ecro-fun/FinalTECH/wiki>
 
 ## 权限
 
@@ -26,11 +26,11 @@ This project is still in progress.
 
 英语是默认的，并将随着时间的推移而保持。
 
-It's welcome to upload others here <https://github.com/ecro-fun/FinalTECH/tree/master/src/main/resources/language>.
+欢迎在这里上传其他 <https://github.com/ecro-fun/FinalTECH/tree/master/src/main/resources/language>。
 
-## Bug report
+## Bug 反馈
 
-It's welcome to report bug here <https://github.com/ecro-fun/FinalTECH/issues>.
+欢迎在这里报告错误 <https://github.com/ecro-fun/FinalTECH/issues>。
 
 ## 版本历史
 
