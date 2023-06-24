@@ -52,3 +52,7 @@ It's welcome to report bug here <https://github.com/ecro-fun/FinalTECH/issues>.
 
 + log service, for protecting server from item duplication bug
 + some optimization for some items
+
+## Discord
+
+You can share fun ideas here https://discord.gg/K5rEu4gHm5
