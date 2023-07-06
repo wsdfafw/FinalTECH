@@ -52,3 +52,7 @@
 
 + 日志服务，以保护服务器免于项目重复
 + 某些项目的一些优化
+
+## Discord
+
+You can share fun ideas here https://discord.gg/K5rEu4gHm5
